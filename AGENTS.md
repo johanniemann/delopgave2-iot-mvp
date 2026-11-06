@@ -22,7 +22,9 @@ silently change an assignment requirement or treat a classroom example as a mand
 - Inspect `git status`, the diff and actual files before planning changes. Preserve
   other contributors' work. Open this repository itself, not the surrounding course folder.
 - Read [project context](docs/project-context.md) before changing architecture or
-  application behaviour. It distinguishes the required MVP from the broader design.
+  application behaviour. Read the [prototype plan](docs/prototype-plan.md) for the
+  selected dashboard scope, domain flow and acceptance examples. Preparation is
+  authorized; application implementation waits for the user to ask to begin.
 - Read [contribution workflow](CONTRIBUTING.md) for branches, review, validation and handoffs.
 - Use [agent setup](docs/agent-setup.md) only for tool loading, research or maintenance.
 - Check the current README and configuration for real commands. There is no API,
@@ -39,9 +41,13 @@ silently change an assignment requirement or treat a classroom example as a mand
 - Implement the smallest complete change. Keep HTTP/input handling, domain rules
   and persistence concerns separate through clear modules/interfaces. A bounded
   context is not automatically a separately deployed service.
-- Keep scope on sensor input -> rule evaluation -> anomaly/alarm -> persisted result.
-  Treat forecasts, work orders, specialist assignment and external enterprise systems
-  as broader design context unless the current task explicitly selects them.
+- Build only Predictive Maintenance: sensor readings, current faults, a clearly
+  simulated forecast, human forecast review and predictive cases in an English
+  dashboard. Case creation requires a fault incident AND a reviewed forecast for
+  the same scenario. A reviewed forecast need not have accepted risks.
+- Include a clearly labelled simulated external maintenance outcome to demonstrate
+  case resolution. Do not build Better Maintenance, work orders, task assignment,
+  operational verification or a real AI model. Follow the prototype plan's boundary.
 - Define request/response fields, errors and event meanings before implementing an
   API change. Domain events describe completed facts; commands request actions.
 - Thresholds, units, boundary comparisons and notification behaviour need explicit

@@ -26,6 +26,20 @@ need not create entries.
 - Human assessment/adaptations: pending group review. The reviewer must record what
   they checked or changed; this agent-generated entry is not evidence of human approval.
 
+## 2026-11-06: Predictive Maintenance prototype preparation
+
+- Student responsible: to be confirmed by the contributing group member.
+- Tool/model: Codex; exact runtime model/version not recorded in the repository.
+- Prompt/purpose: prepare, without building, the Predictive Maintenance-only visual
+  prototype using the supplied diagram and teammate notes. The user selected English
+  UI and a labelled simulated external maintenance outcome for case resolution.
+- Output: prototype plan and corresponding AGENTS/README/project/course context
+  updates. No runtime code, dependency, container or cloud change.
+- Agent validation: repository checker, existing checker tests, whitespace and
+  manual consistency review of scope, diagram gates and linked references.
+- Human assessment/adaptations: pending review of the written plan. The user's scope
+  answers are recorded as decisions, not as approval of unreviewed generated content.
+
 ## Entry template
 
 ```text

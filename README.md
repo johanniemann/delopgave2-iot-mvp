@@ -8,8 +8,13 @@ predictive maintenance/notification, a separate database and CI/CD.
 The repository contains shared agent/developer guidance and setup validation.
 **No application, database, application dependencies or deployment are implemented yet.**
 The wider maintenance design is context, not a list of features already built.
+The agreed prototype covers **Predictive Maintenance only**, with an English
+technician dashboard, synthetic sensor history, simulated forecasts and a labelled
+simulated outcome for case resolution. Better Maintenance is excluded.
+Preparation is documented; application implementation has not been authorized yet.
 
 - [Project status, intended boundaries and open decisions](docs/project-context.md)
+- [Agreed prototype scope, walkthrough and acceptance examples](docs/prototype-plan.md)
 - [Course requirements and source register](docs/course-context.md)
 - [Contribution workflow](CONTRIBUTING.md)
 - [Using Codex, Claude Code, Cursor or Copilot](docs/agent-setup.md)
