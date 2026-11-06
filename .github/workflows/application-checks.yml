@@ -1,0 +1,36 @@
+name: Application checks
+
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+concurrency:
+  group: application-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prototype:
+    name: PostgreSQL tests and Docker smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COMPOSE_PROJECT_NAME: aeris-ci-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Prepare isolated local settings
+        run: python3 scripts/setup_demo.py
+      - name: Check browser script syntax
+        run: node --check app/static/app.js
+      - name: Run domain and API tests with dedicated PostgreSQL
+        run: docker compose --profile test run --rm --build tests
+      - name: Build and deploy the local Docker prototype
+        run: docker compose up -d --build --wait app
+      - name: Smoke test running API and dashboard
+        run: python3 scripts/smoke_test.py
+      - name: Show service status on failure
+        if: failure()
+        run: docker compose ps -a
+      - name: Stop this CI run's isolated project
+        if: always()
+        run: docker compose --profile test down --volumes

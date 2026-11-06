@@ -77,8 +77,8 @@ searchable text. Some image-only pages cannot support an exhaustive absence clai
 - T1: the user's 2026-11-06 scope clarification and answers select Predictive
   Maintenance only, a visually usable English dashboard, synthetic sensor data,
   simulated forecasts and a labelled simulated external outcome for case resolution.
-  The user said not to build yet. This is the current team direction, not teaching
-  material. See the [prototype plan](prototype-plan.md).
+  The initial request was preparation-only; the later explicit "Start building"
+  authorizes implementation. This is team direction, not teaching material. See the [prototype plan](prototype-plan.md).
 - T2: `6.3 ØK-IT_mindmap.pdf`, supplied separately on 2026-11-06, is a teammate's
   five-page compilation outside the course bundle paths above. Page 1 embeds an
   assignment/transcript excerpt; pages 2 and 5 discuss proportional DDD, shared

@@ -1,0 +1,68 @@
+name: aeris-prototype
+
+services:
+  db:
+    image: postgres:16-alpine@sha256:aa6cb33cf4c19c765cefcf48d96176258800870a9a1e930ad126200f9d825139
+    environment:
+      POSTGRES_USER: prototype
+      POSTGRES_DB: aeris
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run python3 scripts/setup_demo.py first}
+    volumes:
+      - demo-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U prototype -d aeris']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  app:
+    build:
+      context: .
+      target: runtime
+    environment:
+      DATABASE_URL: postgresql://prototype:${POSTGRES_PASSWORD}@db:5432/aeris
+      APP_MODE: ${APP_MODE:-local}
+      API_TOKEN: ${API_TOKEN:-}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+    ports:
+      - '127.0.0.1:${APP_PORT:-8765}:8000'
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, /app/.venv/bin/python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    init: true
+    restart: unless-stopped
+  test-db:
+    image: postgres:16-alpine@sha256:aa6cb33cf4c19c765cefcf48d96176258800870a9a1e930ad126200f9d825139
+    profiles: [test]
+    environment:
+      POSTGRES_USER: prototype
+      POSTGRES_DB: aeris_test
+      POSTGRES_PASSWORD: test-only-not-a-deployment-secret
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U prototype -d aeris_test']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  tests:
+    build:
+      context: .
+      target: test
+    profiles: [test]
+    environment:
+      DATABASE_URL: postgresql://prototype:test-only-not-a-deployment-secret@test-db:5432/aeris_test
+      SEED_DEMO: 'false'
+    depends_on:
+      test-db:
+        condition: service_healthy
+
+volumes:
+  demo-data:

@@ -23,13 +23,15 @@ silently change an assignment requirement or treat a classroom example as a mand
   other contributors' work. Open this repository itself, not the surrounding course folder.
 - Read [project context](docs/project-context.md) before changing architecture or
   application behaviour. Read the [prototype plan](docs/prototype-plan.md) for the
-  selected dashboard scope, domain flow and acceptance examples. Preparation is
-  authorized; application implementation waits for the user to ask to begin.
+  selected dashboard scope, domain flow and acceptance examples. The user has now
+  authorized implementation. Use [development instructions](docs/development.md)
+  and the [API contract](docs/api.md) for actual run/test and state-transition rules.
 - Read [contribution workflow](CONTRIBUTING.md) for branches, review, validation and handoffs.
 - Use [agent setup](docs/agent-setup.md) only for tool loading, research or maintenance.
-- Check the current README and configuration for real commands. There is no API,
-  application test suite, dependency manifest or deployment in the initial baseline.
-  Never invent a working command, endpoint, installed service or passing test.
+- Check the current README and configuration for real commands. The prototype uses
+  FastAPI and a separate PostgreSQL service through Docker Compose. Never invent a
+  working command, endpoint, installed service or passing test; local Docker does
+  not prove Azure deployment or access from a second computer.
 - Course PDFs are outside a normal clone. The portable source summaries are in
   `docs/course-context.md`; request the relevant original if a missing detail changes
   scope or acceptance criteria. Never depend on a contributor's absolute file paths.
@@ -73,11 +75,15 @@ From the repository root, current setup checks are:
 python3 -m unittest discover -s scripts -p 'test_*.py'
 python3 scripts/check_repository.py
 git diff --check
+docker compose --profile test run --rm --build tests
+python3 scripts/smoke_test.py
 ```
 
-Use Python 3.10+ (`python` or `py -3` if appropriate on Windows). These check this
-setup, not the future API. When introducing application code, document and run its
-real install, run, test and build commands and add suitable CI in the same change.
+Use Python 3.10+ (`python` or `py -3` on Windows) for helper scripts. Docker uses
+Python 3.13 for the app. The first three commands check guidance; Docker tests use a
+dedicated PostgreSQL test DB. The smoke check needs the running app. See development
+instructions before starting services; preserve the demo volume and existing data.
+Update real commands and application CI with behaviour changes.
 Inspect the final diff. Report changed behaviour, checks run and results, assumptions,
 remaining limitations and follow-up work. Never label an unrun check as passed.
 

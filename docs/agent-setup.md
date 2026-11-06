@@ -6,8 +6,8 @@
 2. Open this repo's root folder in your preferred coding tool. Do not open only a
    source subfolder or the entire surrounding school folder as the project.
 3. Read README and CONTRIBUTING. Use Git and Python 3.10+ to run the three setup checks
-   listed there. No application dependencies, agent packages or shared credentials
-   are required. Each contributor chooses and signs in to their own agent separately.
+   listed there. Running the app additionally uses Docker as described in README.
+   No agent packages or shared agent credentials are required. Each contributor chooses and signs in to their own agent separately.
 4. Start a fresh agent session and ask: "Read AGENTS.md and the relevant project and
    course context. State the current implementation status, authority order and checks
    you can run. Do not edit files yet." Confirm the answer before delegating a task.
@@ -30,7 +30,9 @@ it is on main. After merge, normal `git pull --ff-only` brings it to existing cl
 | [AI-use notes](ai-use.md) | Evidence for the course's required AI-use documentation |
 | [PR template](../.github/pull_request_template.md) | Small review checklist and evidence prompts |
 | [Repository checker](../scripts/check_repository.py) and [tests](../scripts/test_check_repository.py) | Check local Markdown links/anchors, imports and portability; exercise error cases |
-| [Workflow](../.github/workflows/repository-checks.yml) | Runs setup checks on push/PR; no app build/deployment |
+| [Guidance workflow](../.github/workflows/repository-checks.yml) | Runs setup checks on push/PR |
+| [Application workflow](../.github/workflows/application-checks.yml) | Real PostgreSQL tests, Docker build/deployment and HTTP smoke check in an isolated CI project |
+| [Development](development.md) and [API contract](api.md) | Real app commands, architecture, inputs and state rules |
 | [.gitignore](../.gitignore) | Excludes common local state and secret files; not a secret scanner |
 
 ### Verified formats and per-tool onboarding
@@ -75,7 +77,7 @@ not managed by this repo. Never weaken them to make a task run unattended.
 | Hierarchical instructions | Supported future option. No nested files until real source areas need different rules; repeat critical boundaries locally if a client's loading semantics require it |
 | Runtime sandbox, least privilege and deterministic CI | Keep tool controls; read-only CI token, pinned checkout, no persistent credentials, no production secrets |
 | Parallel agents and handoffs | Optional isolated branches/worktrees and bounded ownership; human review stays necessary |
-| Agent-specific hooks, MCP servers, background swarms, remote memory | Deferred: no demonstrated need in this README-only project, extra permissions/dependencies/maintenance |
+| Agent-specific hooks, MCP servers, background swarms, remote memory | Deferred: no demonstrated need in this small prototype, extra permissions/dependencies/maintenance |
 | Autonomous deployment or agent self-approval | Not enabled; neither instructions nor a model's review replaces release authorization or independent human review |
 
 The general idea of shared Markdown guidance is established; cross-vendor AGENTS
@@ -103,8 +105,9 @@ Research behind these choices:
 
 Update the existing source of truth rather than adding a second rule file. New course
 material should update the source register and affected acceptance criteria together.
-Record the framework/database/runtime choices and actual commands when app code is
-introduced. Add application validation then; never present setup checks as full CI/CD.
+Keep framework/database/runtime choices and actual commands in project context and
+development instructions. Maintain application validation; never present guidance
+checks alone as full CI/CD.
 Use small decision notes for consequential architecture changes, linked from project
 context. Keep sensitive task details and credentials out of shared instructions.
 If tool behaviour changes, recheck official documentation, update this matrix and

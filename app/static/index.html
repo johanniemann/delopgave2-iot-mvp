@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#163f39" />
+    <meta
+      name="description"
+      content="Aeris Predictive Maintenance: a synthetic wind-turbine monitoring and human review prototype."
+    />
+    <title>Aeris · Predictive Maintenance</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#overview" aria-label="Aeris overview"
+        ><svg viewBox="0 0 36 36" aria-hidden="true">
+          <path d="M18 5 5 30h8l5-10 5 10h8L18 5Z" fill="currentColor" />
+          <path d="m18 12-4 8h8Z" fill="#e0eee9" /></svg
+        ><span>aeris<span class="brand-dot">.</span></span></a
+      >
+      <div class="workspace-label">OPERATIONS WORKSPACE</div>
+      <nav aria-label="Main navigation" id="navigation"></nav>
+      <div class="sidebar-bottom">
+        <div class="workspace-card">
+          <span class="status-dot"></span><strong>Prototype workspace</strong>
+          <p>Synthetic data. Real workflow.</p>
+          <button class="text-button" data-action="about">
+            About this prototype <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+        <div class="profile">
+          <span class="avatar">DT</span>
+          <div>
+            <strong>Demo Technician</strong
+            ><small>Maintenance specialist</small>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <div class="breadcrumb">
+          <button
+            class="icon-button menu-button"
+            data-action="menu"
+            aria-label="Toggle navigation"
+          >
+            ☰</button
+          ><span>Workspace</span><span class="slash">/</span
+          ><strong>Predictive Maintenance</strong>
+        </div>
+        <div class="topbar-right">
+          <span id="connection" class="connection"
+            ><i class="status-dot"></i>Connecting</span
+          ><span class="demo-badge">DEMO ENVIRONMENT</span>
+        </div>
+      </header>
+      <main id="main" tabindex="-1">
+        <div class="loading-state">
+          <div class="loader"></div>
+          <h1>Opening your workspace</h1>
+          <p>Loading persisted turbine evidence…</p>
+        </div>
+      </main>
+      <footer>
+        <span>Aeris · Predictive Maintenance prototype</span
+        ><span
+          >Synthetic data · Times in Copenhagen
+          <span class="footer-separator">|</span>
+          <a href="/docs" target="_blank" rel="noopener"
+            >API reference ↗</a
+          ></span
+        >
+      </footer>
+    </div>
+    <dialog id="modal"><div id="modal-content"></div></dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
