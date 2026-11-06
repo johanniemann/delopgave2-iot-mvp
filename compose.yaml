@@ -6,7 +6,8 @@ services:
     environment:
       POSTGRES_USER: prototype
       POSTGRES_DB: aeris
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run python3 scripts/setup_demo.py first}
+      # Generate local settings with python3 scripts/setup_demo.py first.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
     volumes:
       - demo-data:/var/lib/postgresql/data
     healthcheck:
