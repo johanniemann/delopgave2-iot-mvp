@@ -64,8 +64,10 @@ need not create entries.
 - Output: optional shared Compose/Caddy configuration, private setup and release
   helpers, authenticated live smoke check, CI coverage and deployment documentation.
 - Infrastructure: approved restricted SSH and web firewall changes; user selected
-  00:00 Copenhagen nightly shutdown. Actual server deployment requires verified
-  SSH access; see the deployment guide for current state and validation evidence.
+  00:00 Copenhagen nightly shutdown and personally submitted SSH key registration.
+  The existing VM now runs the shared HTTPS demo. The user explicitly approved
+  copying only its dashboard token to a private ignored file on their Mac for
+  access/testing. See the deployment guide for actual evidence and remaining limits.
 - Human assessment/adaptations: user accepted the local experience and selected the
   shutdown time. Independent review of this deployment change is still pending.
 

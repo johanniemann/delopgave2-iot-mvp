@@ -14,11 +14,12 @@ def main():
     root = Path(__file__).resolve().parents[1]
     compose = ["docker", "compose", "--project-name", "aeris-shared", "--env-file", str(env_file),
                "-f", "compose.yaml", "-f", "compose.shared.yaml"]
-    subprocess.run(compose + ["config", "--quiet"], cwd=root, check=True)
+    # Docker must not consume the remaining commands when invoked over SSH stdin.
+    subprocess.run(compose + ["config", "--quiet"], cwd=root, check=True, stdin=subprocess.DEVNULL)
     subprocess.run(compose + ["run", "--rm", "--no-deps", "caddy", "caddy", "validate",
-                              "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"], cwd=root, check=True)
-    subprocess.run(compose + ["up", "-d", "--build", "--wait", "--wait-timeout", "180", "caddy"], cwd=root, check=True)
-    subprocess.run(compose + ["ps"], cwd=root, check=True)
+                              "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"], cwd=root, check=True, stdin=subprocess.DEVNULL)
+    subprocess.run(compose + ["up", "-d", "--build", "--wait", "--wait-timeout", "180", "caddy"], cwd=root, check=True, stdin=subprocess.DEVNULL)
+    subprocess.run(compose + ["ps"], cwd=root, check=True, stdin=subprocess.DEVNULL)
     print("Containers are ready. Verify trusted public HTTPS and the access guard before sharing the URL.")
 
 

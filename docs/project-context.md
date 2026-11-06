@@ -6,8 +6,11 @@ The initial README-only baseline was e1bfcef. The user clarified the Predictive
 Maintenance-only scope and explicitly authorized implementation on 2026-11-06.
 The current prototype implements an English dashboard, FastAPI REST endpoints,
 PostgreSQL persistence, deterministic simulated forecasts, saved risk reviews,
-case gates, simulated outcomes and an event timeline. Local Docker is the current
-deployment; the existing Azure VM/database is not connected or verified here.
+case gates, simulated outcomes and an event timeline. Local Docker remains the
+development option. A shared HTTPS deployment now runs on the existing Azure VM
+with a dedicated PostgreSQL container and persistent volume, not a reused legacy
+database. External API access and the saved midnight shutdown schedule are verified;
+see [deployment evidence and limits](deployment.md).
 
 ## Implemented structure
 
@@ -97,7 +100,7 @@ without a task that needs it. No Salesforce/Business Central integration is sele
 | Database | PostgreSQL 16, separate Compose service and persistent named volume; objects isolated in aeris schema | Future schema changes need forward migrations; verify VM compatibility before reuse |
 | Threshold, units and equality boundary | Synthetic wind_speed in m/s; strictly >28.0 opens fault, equality does not; invalid/null readings retained and excluded | A demo configuration, not an equipment safety limit |
 | Forecast and notification | Fixed illustrative risks; saved human review; visible dashboard fault/review queue | No real inference, email/SMS or paid service |
-| Deployment | Working local Compose architecture; DB port private, app loopback-only; shared-mode bearer guard exists | Azure/VM integration, TLS/shared access, shutdown schedule and a real second-computer API request remain unverified |
+| Deployment | Local Compose plus shared Azure Compose/Caddy HTTPS deployment; private DB, loopback app, shared bearer guard; Mac-to-VM API verified; midnight Copenhagen shutdown saved | Other members still need to try shared access; actual scheduled stop and later VM startup have not been observed; release promotion is manual |
 | Branch enforcement | Feature branches + independent PR review are team conventions | Hosting enforcement still not configured/verified by this implementation |
 
 An architecture change should record the problem, alternatives, selected approach,

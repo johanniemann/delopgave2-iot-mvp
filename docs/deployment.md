@@ -7,14 +7,35 @@ that might already be installed on the VM. Inspect the host before first deploym
 
 ## Deployment state
 
-The local prototype has been accepted for this demonstration. Shared-host setup
-is in progress: the approved Azure firewall permits TCP 80/443 and restricts Johan's
+The accepted prototype is running on the existing VM. The approved Azure firewall
+permits TCP 80/443 and restricts Johan's
 SSH rule to his current public IPv4 /32. The VM's nightly shutdown is enabled at
 **00:00 in the Copenhagen time zone**. There is no automatic startup schedule.
 The existing static public IP now has the verified DNS name
 `aeris-studiegruppe-linux.swedencentral.cloudapp.azure.com` (20.91.193.131).
-Server login, installation and trusted public HTTPS still need verification; the
-existence of these configuration files does not prove a successful Azure release.
+
+Open [the shared dashboard](https://aeris-studiegruppe-linux.swedencentral.cloudapp.azure.com/)
+with the group's private access token. The 2026-11-06 pilot verified personal SSH
+access, a fresh Docker installation, HTTP-to-HTTPS redirect, a publicly trusted
+certificate, real PostgreSQL readiness, HTTP 401 without a token, and authenticated
+API calls from the developer's Mac to the VM. The public browser walkthrough saved
+a review and case; a failed simulated outcome kept it open, and a successful one
+resolved it. Synthetic QA records are labelled accordingly. This is an external
+computer calling the VM API; it is not evidence that every teammate has tested access.
+
+The actual app and database containers were stopped and started with the same named
+volume. The full QA case response (96 readings, saved review, two outcomes and event
+history) was identical before/after. Local validation passed 43 application tests,
+11 helper/guidance tests, repository/whitespace checks, Caddy validation, and real
+local/shared HTTP smoke checks. Source changes are in the deployment task PR; its
+independent human review is pending. The VM's release directory records its source
+commit in `RELEASE_COMMIT`, and `~/aeris/current` identifies the selected release.
+
+The initial host inspection found no Docker/database packages or listeners on the
+application/web/database ports. Docker Engine 29.9.3 and Compose plugin 5.7.0 were
+installed from Docker's official signed Ubuntu repository. The app, database and
+proxy have separate containers; only 80/443 are public, app 8765 is loopback only.
+Shutdown is saved in Azure; an actual midnight stop has not yet been observed.
 
 ## One-time host preparation
 
@@ -25,7 +46,7 @@ existence of these configuration files does not prove a successful Azure release
 2. Inspect existing containers, listeners on 80/443/8765, available disk/RAM, and
    any existing database before installing anything. Preserve other group services.
    This small VM has 2 vCPUs and 4 GiB RAM; no additional paid cloud service is needed.
-3. Install Docker Engine and Compose v2 using [Docker's official Ubuntu instructions](https://docs.docker.com/engine/install/ubuntu/).
+3. Install Docker Engine and its Compose plugin using [Docker's official Ubuntu instructions](https://docs.docker.com/engine/install/ubuntu/).
    Do not blindly uninstall conflicting packages used by another project. Running
    Docker requires appropriate host privileges; Docker-group membership is root-equivalent.
 4. Give the VM's **existing static public IP** an available Azure DNS label. Use its
@@ -59,6 +80,10 @@ From the chosen release directory **on the VM**, with Docker access:
 ```sh
 python3 scripts/deploy_shared.py --env-file ../../.env.shared
 ```
+
+The current Azure account uses `sudo -n python3 scripts/deploy_shared.py --env-file
+../../.env.shared` instead of Docker-group membership. It already has authorized
+administrator access; the release procedure does not grant another account access.
 
 The script checks private file permissions, validates the merged configuration and
 Caddyfile, then builds/starts the `aeris-shared` Compose project. Keep that project
@@ -102,6 +127,9 @@ a forward migration; restoring old source cannot undo a database migration.
    This read-only check verifies real HTTP assets, authenticated data, PostgreSQL
    readiness and rejection without a token. It uses normal TLS verification. Never
    publish the token as a command argument or disable certificate verification.
+   If a standalone macOS Python reports a missing local issuer while the browser
+   and system curl trust the certificate, point that process at the existing system
+   CA bundle with `SSL_CERT_FILE=/etc/ssl/cert.pem`; keep verification enabled.
 4. Review a synthetic scenario, create a case, record a clearly simulated outcome
    and reload. Restart containers and verify the same records remain. Have another
    group member call the API from their own computer and record that evidence.
