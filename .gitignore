@@ -1,0 +1,28 @@
+# Local/editor/agent state
+.DS_Store
+Thumbs.db
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.idea/
+.vscode/
+CLAUDE.local.md
+.claude/settings.local.json
+.codex-log/
+
+# Secrets and local runtime data; .env.example may contain placeholders only
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.db
+*.sqlite
+*.sqlite3
