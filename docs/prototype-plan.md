@@ -1,7 +1,9 @@
 # Predictive Maintenance prototype plan
 
-Status: preparation only, 2026-11-06. No application, database, containers or cloud
-deployment have been built for this plan. Wait for the user to ask to begin.
+Status: implementation authorized by the user on 2026-11-06. This records the agreed
+scope and acceptance criteria. The local prototype now implements this flow; see
+[development instructions](development.md) and [current project context](project-context.md)
+for actual commands, decisions, validation and remaining remote-deployment work.
 
 ## Goal and authority
 
@@ -80,7 +82,7 @@ and timeline events transactionally. Reject stale conflicting reviews/transition
 instead of silently overwriting another technician's decision. An event timeline
 does not require event sourcing, an outbox or a message broker.
 
-## Proposed simple architecture, not installed technology
+## Architecture direction
 
 ```text
 Technician browser
@@ -92,11 +94,11 @@ One application: dashboard + REST API + domain rules + demo adapters
 Separate database: readings, incidents, forecasts/reviews, cases, events/outcomes
 ```
 
-Recommended starting point: Python/FastAPI with HTML templates, CSS and a little
+The selected local implementation uses Python/FastAPI with HTML templates, CSS and a little
 JavaScript in the same application, plus PostgreSQL as a separate database service.
 This keeps the visible prototype and required API together without another frontend
-build/deployment. This is a proposal, not a course requirement or installed stack.
-Pin compatible versions and declare real commands only when implementation starts.
+build/deployment. This is a team choice, not a course requirement.
+Versions are locked and the working commands are in README/development instructions.
 
 Local Compose can run the app and database reproducibly with persistent demo data.
 If the existing Azure VM database is usable, the same app can access it server-side
@@ -132,7 +134,7 @@ These confirm available mechanisms, not the completion of any implementation.
 - Final MVP evidence: genuine remote API request, database retrieval, application
   tests/build and CI/CD evidence alongside the dashboard (assignment R1-R6).
 
-## Implementation order after authorization
+## Implementation sequence
 
 1. Agree concrete synthetic signals/rule boundaries and API/state examples; verify
    the VM/database read-only if reuse is selected. Confirm versions and local setup.
@@ -143,6 +145,7 @@ These confirm available mechanisms, not the completion of any implementation.
 4. Run browser acceptance checks, extend CI to actual app/test/build checks, then
    configure the authorized remote demonstration and document the run/deploy process.
 
-Remaining choices: demo rule/units, final stack/versions, verified VM database and
-deployment/access approach. These do not block preparation and must not be presented
-as verified facts. No further product-scope question is currently blocking the plan.
+The demo rule/units and local stack are selected in the API contract and project
+context. The VM database and remote deployment/access approach still need verification.
+Keep those separate from the working local prototype; do not claim a real remote
+request or Azure deployment until demonstrated.

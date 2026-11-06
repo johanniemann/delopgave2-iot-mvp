@@ -1,42 +1,68 @@
-# delopgave2-iot-mvp
+# Aeris · Predictive Maintenance
 
-The group's Delopgave 2 project for Intelligent IoT Solutions: a REST API for
-predictive maintenance/notification, a separate database and CI/CD.
+An English technician dashboard and REST API for the group's Delopgave 2 prototype.
+Inspect synthetic wind-turbine readings, assess a fault, review an illustrated
+forecast, create a predictive case and record a simulated maintenance outcome.
+**Predictive Maintenance only.** Better Maintenance is outside scope.
 
-## Current status
+The API, review decisions, state rules, PostgreSQL persistence and event timeline
+work. Sensor input, forecasts and external maintenance outcomes are synthetic.
+There is no real AI inference, physical sensor connection, repair or verification.
 
-The repository contains shared agent/developer guidance and setup validation.
-**No application, database, application dependencies or deployment are implemented yet.**
-The wider maintenance design is context, not a list of features already built.
-The agreed prototype covers **Predictive Maintenance only**, with an English
-technician dashboard, synthetic sensor history, simulated forecasts and a labelled
-simulated outcome for case resolution. Better Maintenance is excluded.
-Preparation is documented; application implementation has not been authorized yet.
+## Start the dashboard
 
-- [Project status, intended boundaries and open decisions](docs/project-context.md)
-- [Agreed prototype scope, walkthrough and acceptance examples](docs/prototype-plan.md)
-- [Course requirements and source register](docs/course-context.md)
-- [Contribution workflow](CONTRIBUTING.md)
-- [Using Codex, Claude Code, Cursor or Copilot](docs/agent-setup.md)
-- [Canonical agent instructions](AGENTS.md)
-- [AI-use record](docs/ai-use.md)
+With Docker Desktop running, from this repository's root:
 
-## Get started
+```sh
+python3 scripts/setup_demo.py
+docker compose up -d --build --wait app
+```
 
-Accept the GitHub invitation, then clone this repo or update your existing clone.
-Open the `delopgave2-iot-mvp` folder itself in your editor/agent. Each member uses
-their own account and tool; no API key or paid agent service is needed by this setup.
+Open **http://localhost:8765**. Each group member uses their own clone and local
+settings. The setup script creates an ignored `.env` with random credentials;
+it preserves existing settings. No local Python package or Node install is needed.
+Docker runs Python 3.13; helper scripts need Python 3.10+.
 
-Use Git and Python 3.10+ for the setup checks (no pip install required):
+Select **New demo scenario -> High-wind event**. Review both predicted risks, write
+a note, save, then create a case. Try a failed simulated maintenance outcome before
+a successful one. An incomplete/failed result keeps the case Open; a successful
+simulated outcome resolves it. Reload to see persisted decisions and history.
+Normal, invalid-data and custom-reading scenarios are also available.
+
+The initial database contains clearly labelled Seeded demo history: one pending
+forecast and two sample cases. This is illustrative history, not real human review.
+The dashboard and database run locally. Azure/VM reuse and a genuine request from
+another computer remain separate deployment demonstrations.
+
+```sh
+docker compose stop app db
+```
+
+Stops services while preserving data. Do not delete the named database volume.
+The DB port is not published; the app binds to this computer's loopback interface.
+
+## Validate changes
 
 ```sh
 python3 -m unittest discover -s scripts -p 'test_*.py'
 python3 scripts/check_repository.py
 git diff --check
+docker compose --profile test run --rm --build tests
+python3 scripts/smoke_test.py
 ```
 
-On Windows, substitute `python` or `py -3` for `python3` as installed.
-The GitHub Actions job **Repository checks** runs these on pushes and PRs.
-It validates repository guidance, not API functionality. Application setup and
-validation commands must be added when the first application increment is built.
-See the contribution guide before starting a task branch.
+The last command needs the app running. Docker tests use a separate temporary
+PostgreSQL database and never clear demo data. On Windows use `python` or `py -3`.
+GitHub Actions runs guidance checks, actual PostgreSQL tests, image builds and a
+fresh local Docker deployment/HTTP smoke check. No feature branch deploys to Azure.
+
+## Shared project guidance
+
+- [Run, demonstrate, test and maintain the prototype](docs/development.md)
+- [API contract, demo rule and state transitions](docs/api.md) · live OpenAPI at `/docs`
+- [Project architecture, decisions and remaining work](docs/project-context.md)
+- [Prototype scope and acceptance examples](docs/prototype-plan.md)
+- [Course requirements and source register](docs/course-context.md)
+- [Branch, PR and review workflow](CONTRIBUTING.md)
+- [Using Codex, Claude Code, Cursor or Copilot](docs/agent-setup.md)
+- [Canonical agent instructions](AGENTS.md) · [AI-use record](docs/ai-use.md)

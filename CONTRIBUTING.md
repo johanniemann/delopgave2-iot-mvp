@@ -44,11 +44,11 @@ python3 scripts/check_repository.py
 git diff --check
 ```
 
-On Windows use the installed `python` or `py -3` equivalent. There is no install/run/
-build command for an application yet. When adding the application, document real
-commands in README, version its dependency declarations, add appropriate CI and
-show normal/error paths and persistence where relevant. A docs CI pass is not an
-API test or deployment result.
+On Windows use the installed `python` or `py -3` equivalent. For application changes
+also run `docker compose --profile test run --rm --build tests`; with the app running,
+run `python3 scripts/smoke_test.py`. See [development instructions](docs/development.md).
+Review normal/error paths, rule boundaries and actual PostgreSQL persistence. A
+guidance-check pass alone is not an API test or deployment result.
 
 ## Review and deployment boundaries
 
@@ -59,8 +59,9 @@ does not modify hosting access, billing, rulesets or branch protection. Private-
 rule enforcement depends on the owner's GitHub plan. Do not claim rules are active
 because a Markdown file describes them. No agent should bypass a failing check.
 
-CI currently checks repository guidance only. When deployment is built, separate
-PR verification from authorized release/deployment. Do not give PR jobs production
+CI checks guidance, real PostgreSQL behaviour, Docker builds and an isolated local
+deployment/HTTP smoke test. Keep PR verification separate from shared/production
+release/deployment. Do not give PR jobs production
 secrets or deploy arbitrary feature branches. Test/build/publish/deploy are distinct
 operations, and real infrastructure changes require the task's authorization.
 

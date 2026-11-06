@@ -2,13 +2,29 @@
 
 ## Observed baseline and current implementation
 
-At inspection on 2026-11-06, local HEAD and fetched origin/main contained only the
-initial README (commit e1bfcef). There was no source code, dependency manifest,
-Dockerfile, database configuration, test suite, CI or agent configuration.
-This setup adds developer guidance and a repository-check workflow only.
-The prototype scope was clarified on 2026-11-06; it is still preparation, not an
-implemented application or permission to start building it.
-Reinspect actual files as this status evolves; update this page with implementation.
+The initial README-only baseline was e1bfcef. The user clarified the Predictive
+Maintenance-only scope and explicitly authorized implementation on 2026-11-06.
+The current prototype implements an English dashboard, FastAPI REST endpoints,
+PostgreSQL persistence, deterministic simulated forecasts, saved risk reviews,
+case gates, simulated outcomes and an event timeline. Local Docker is the current
+deployment; the existing Azure VM/database is not connected or verified here.
+
+## Implemented structure
+
+- `app/main.py` / `app/schemas.py`: API, validation, safe errors and access boundary.
+- `app/domain.py`: synthetic rule (>28.0 m/s), case gate and resolution rule.
+- `app/service.py`: transactional operations, version checks, replay receipts, seeds.
+- `app/db.py` / `app/schema.sql`: pooled PostgreSQL access and initial schema v1.
+- `app/static/`: same-origin HTML/CSS/JavaScript dashboard; no frontend build service.
+- `tests/`: pure rules plus real PostgreSQL HTTP/integration tests.
+- `compose.yaml` / `Dockerfile`: app + separate DB; isolated disposable test DB.
+- `.github/workflows/application-checks.yml`: tests, image build, local Docker
+  deployment and actual HTTP smoke check; no Azure/production secrets.
+
+State changes and domain events commit together. Row locks plus expected versions
+prevent silent overwrites; request receipts and external references prevent duplicate
+cases/outcomes. This is not event sourcing. Domain tests alone do not replace the
+PostgreSQL tests. See [development instructions](development.md) and [API contract](api.md).
 
 ## Required product direction
 
@@ -69,16 +85,16 @@ The report also proposes durable handoffs/outbox and replay handling for a later
 cross-context integration. Do not introduce that infrastructure for simple telemetry
 without a task that needs it. No Salesforce/Business Central integration is selected.
 
-## Open decisions, not assumptions
+## Current decisions and remaining work
 
 | Decision | Current evidence | When to resolve |
 | --- | --- | --- |
-| Language, framework and versions | Python/FastAPI with a same-application HTML/CSS/JavaScript dashboard is proposed, not installed or mandated | Confirm at the first authorized application increment; document versions and real commands |
-| Database | Separate persistence required; PostgreSQL proposed, with identical demo data/schema locally or on the VM | Verify existing VM database before choosing reuse or a new service |
-| Threshold, units and equality boundary | Exercise uses wind speed with an illustrative threshold; no validated project threshold | Acceptance examples before rule implementation |
-| Notification | Visible in-dashboard fault/alert proposed; external delivery is not selected | Confirm the alert meets the observable flow; no paid email/SMS service by default |
-| Deployment | Azure or local Docker permitted; local Compose is available; no container or Azure resource was started for this preparation | Verify actual VM services, database, access, cost and shutdown schedule before authorized deployment |
-| Branch enforcement | Feature branches + PR review are the chosen working convention for this setup | Verify hosting plan/settings before claiming enforcement |
+| Language, framework and versions | Python 3.13/FastAPI, same-application HTML/CSS/JavaScript; exact dependencies in uv.lock and official base images pinned by digest | Review/test explicit upgrades; no extra frontend service |
+| Database | PostgreSQL 16, separate Compose service and persistent named volume; objects isolated in aeris schema | Future schema changes need forward migrations; verify VM compatibility before reuse |
+| Threshold, units and equality boundary | Synthetic wind_speed in m/s; strictly >28.0 opens fault, equality does not; invalid/null readings retained and excluded | A demo configuration, not an equipment safety limit |
+| Forecast and notification | Fixed illustrative risks; saved human review; visible dashboard fault/review queue | No real inference, email/SMS or paid service |
+| Deployment | Working local Compose architecture; DB port private, app loopback-only; shared-mode bearer guard exists | Azure/VM integration, TLS/shared access, shutdown schedule and a real second-computer API request remain unverified |
+| Branch enforcement | Feature branches + independent PR review are team conventions | Hosting enforcement still not configured/verified by this implementation |
 
 An architecture change should record the problem, alternatives, selected approach,
 course/source connection and consequences here or in a focused decision note linked

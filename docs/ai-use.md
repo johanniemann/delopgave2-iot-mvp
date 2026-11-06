@@ -40,6 +40,21 @@ need not create entries.
 - Human assessment/adaptations: pending review of the written plan. The user's scope
   answers are recorded as decisions, not as approval of unreviewed generated content.
 
+## 2026-11-06: working local Predictive Maintenance prototype
+
+- Student responsible: to be confirmed by the contributing group member.
+- Tool/model: Codex; exact runtime model/version not recorded in the repository.
+- Prompt/purpose: "Start building" the previously agreed visual Predictive
+  Maintenance prototype, preserving the single-context scope and explicit simulation.
+- Output: FastAPI app, dashboard, PostgreSQL schema/transactions, Docker runtime/test
+  configuration, application tests, CI and updated API/development/context docs.
+- Agent validation: real PostgreSQL domain/API tests, actual Docker deployment and
+  HTTP smoke check, browser walkthrough, syntax/portability/whitespace checks.
+  See the implementation PR for results and limits. Browser QA uses a clearly
+  simulated reviewer label; it does not claim real specialist/human approval.
+- Human assessment/adaptations: pending independent group review. Sample history
+  and generated likelihoods are synthetic; no true ML/repair/verification is claimed.
+
 ## Entry template
 
 ```text
