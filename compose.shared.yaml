@@ -1,0 +1,35 @@
+# Always combine with compose.yaml and an explicitly selected shared environment.
+services:
+  app:
+    environment:
+      APP_MODE: shared
+      API_TOKEN: ${API_TOKEN:?}
+      PUBLIC_ORIGIN: https://${AERIS_HOSTNAME:?}
+      ALLOWED_HOSTS: ${AERIS_HOSTNAME:?},localhost,127.0.0.1
+    logging: &bounded-logs
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+  db:
+    logging: *bounded-logs
+  caddy:
+    image: caddy:2.11.9-alpine@sha256:78bd35025c7ba85961dd149ae670315129954e77abe2383ac47c89106b35ade9
+    environment:
+      AERIS_HOSTNAME: ${AERIS_HOSTNAME:?}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./ops/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *bounded-logs
+
+volumes:
+  caddy-data:
+  caddy-config:

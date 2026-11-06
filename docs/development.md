@@ -96,8 +96,13 @@ CREATE TABLE statement is not a migration for an already initialized database.
 
 ## Remote demonstration is a separate deployment decision
 
-The current working deployment is local Docker. The existing VM/database has not
-been integrated or verified by this implementation. For VM reuse, first inspect its
+The [shared Azure deployment guide](deployment.md) contains the selected HTTPS
+configuration, host preparation, release procedure and current verification state.
+Local development continues to use only `compose.yaml`; the shared override is an
+explicit deployment choice, not the default for every contributor.
+
+The currently verified working deployment is local Docker. Server login and a real
+Azure release remain to be verified. For VM reuse, first inspect its
 engine/schema/access and shutdown schedule. Configure the app to its dedicated
 PostgreSQL database through private connectivity; never open the DB port publicly.
 Keep a local Compose option for every group member.

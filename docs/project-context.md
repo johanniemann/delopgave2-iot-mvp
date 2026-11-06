@@ -20,6 +20,10 @@ deployment; the existing Azure VM/database is not connected or verified here.
 - `compose.yaml` / `Dockerfile`: app + separate DB; isolated disposable test DB.
 - `.github/workflows/application-checks.yml`: tests, image build, local Docker
   deployment and actual HTTP smoke check; no Azure/production secrets.
+- `compose.shared.yaml` / `ops/Caddyfile`: optional shared-mode HTTPS boundary.
+  Setup/release helpers and [deployment guide](deployment.md) preserve one stable
+  Compose project and private settings across releases. Azure runtime verification
+  remains separate from CI's local proxy/authentication checks.
 
 State changes and domain events commit together. Row locks plus expected versions
 prevent silent overwrites; request receipts and external references prevent duplicate
