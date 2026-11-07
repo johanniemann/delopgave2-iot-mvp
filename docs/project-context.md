@@ -100,8 +100,15 @@ without a task that needs it. No Salesforce/Business Central integration is sele
 | Database | PostgreSQL 16, separate Compose service and persistent named volume; objects isolated in aeris schema | Future schema changes need forward migrations; verify VM compatibility before reuse |
 | Threshold, units and equality boundary | Synthetic wind_speed in m/s; strictly >28.0 opens fault, equality does not; invalid/null readings retained and excluded | A demo configuration, not an equipment safety limit |
 | Forecast and notification | Fixed illustrative risks; saved human review; visible dashboard fault/review queue | No real inference, email/SMS or paid service |
-| Deployment | Local Compose plus shared Azure Compose/Caddy HTTPS deployment; private DB, loopback app, shared bearer guard; Mac-to-VM API verified; midnight Copenhagen shutdown saved | Other members still need to try shared access; actual scheduled stop and later VM startup have not been observed; release promotion is manual |
+| Deployment | Local Compose plus shared Azure Compose/Caddy HTTPS deployment; private DB, loopback app, shared bearer guard; Mac-to-VM API verified; midnight Copenhagen shutdown saved; actual VM deallocation/startup and saved evidence verified on 2026-11-07 | Other members still need to try shared access; actual scheduled stop has not been observed; release promotion is manual |
 | Branch enforcement | Feature branches + independent PR review are team conventions | Hosting enforcement still not configured/verified by this implementation |
+
+On 2026-11-07 the owner explicitly authorized merging PR #4 after its five checks
+passed because no other group member was available. The merge records this one-off
+decision without claiming an independent review. The normal review convention stays
+in place. The owner also selected the existing Azure hostname instead of adding
+GitHub Pages or a separate public frontend. See the [Danish beginner walkthrough](project-walkthrough-da.md)
+for the project's implementation, choices and course connections.
 
 An architecture change should record the problem, alternatives, selected approach,
 course/source connection and consequences here or in a focused decision note linked

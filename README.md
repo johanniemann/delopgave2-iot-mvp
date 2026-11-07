@@ -60,6 +60,7 @@ fresh local Docker deployment/HTTP smoke check. No feature branch deploys to Azu
 
 ## Shared project guidance
 
+- [Projektet forklaret på dansk uden tekniske forkundskaber](docs/project-walkthrough-da.md)
 - [Run, demonstrate, test and maintain the prototype](docs/development.md)
 - [Shared Azure deployment and verification state](docs/deployment.md)
 - [API contract, demo rule and state transitions](docs/api.md) · live OpenAPI at `/docs`
