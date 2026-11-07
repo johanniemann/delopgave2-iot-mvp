@@ -27,8 +27,11 @@ The actual app and database containers were stopped and started with the same na
 volume. The full QA case response (96 readings, saved review, two outcomes and event
 history) was identical before/after. Local validation passed 43 application tests,
 11 helper/guidance tests, repository/whitespace checks, Caddy validation, and real
-local/shared HTTP smoke checks. Source changes are in the deployment task PR; its
-independent human review is pending. The VM's release directory records its source
+local/shared HTTP smoke checks. [PR #4](https://github.com/johanniemann/delopgave2-iot-mvp/pull/4)
+was merged on 2026-11-07 after all five checks passed and the owner explicitly
+authorized an exception while the other members were unavailable. This was an owner
+merge decision, not an independent review or self-approval. Teammate review remains
+follow-up work. The VM's release directory records its source
 commit in `RELEASE_COMMIT`, and `~/aeris/current` identifies the selected release.
 
 The initial host inspection found no Docker/database packages or listeners on the
@@ -36,6 +39,20 @@ application/web/database ports. Docker Engine 29.9.3 and Compose plugin 5.7.0 we
 installed from Docker's official signed Ubuntu repository. The app, database and
 proxy have separate containers; only 80/443 are public, app 8765 is loopback only.
 Shutdown is saved in Azure; an actual midnight stop has not yet been observed.
+
+On 2026-11-07 the VM was started from its previously verified deallocated state.
+The named HTTPS endpoint, unauthenticated rejection, authenticated API and public
+dashboard worked without reinstalling. The complete saved QA case response matched
+the previous day's baseline, including 96 readings, the review, both outcomes and
+events. The VM was then stopped and **Stopped (deallocated)** was verified again.
+The automatic midnight schedule remains a separate saved safeguard; these manual
+stops do not establish that the scheduled job itself has fired.
+
+The owner selected the existing VM hostname after reviewing GitHub Pages. Pages
+cannot directly host the Python/PostgreSQL service or turn a github.io address into
+an arbitrary VM DNS alias. It also needs a qualifying plan for a private source
+repository. No public frontend repository, Pages site, domain purchase or subscription
+was created. The selected topology remains one origin for dashboard and API.
 
 ## One-time host preparation
 

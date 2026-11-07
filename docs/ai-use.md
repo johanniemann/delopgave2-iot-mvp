@@ -69,7 +69,31 @@ need not create entries.
   copying only its dashboard token to a private ignored file on their Mac for
   access/testing. See the deployment guide for actual evidence and remaining limits.
 - Human assessment/adaptations: user accepted the local experience and selected the
-  shutdown time. Independent review of this deployment change is still pending.
+  shutdown time. On 2026-11-07 the owner explicitly authorized merge after passing
+  checks while the others were unavailable. No independent review is claimed;
+  retrospective teammate review remains follow-up work.
+
+## 2026-11-07: continuation and Danish beginner explanation
+
+- Student responsible: to be confirmed by the contributing group member.
+- Tool/model: Codex; exact runtime model/version not recorded in the repository.
+- Prompt/purpose: continue with the owner as the only available group member,
+  investigate a GitHub Pages address, and explain the work of November 6-7 for
+  someone without coding/GitHub knowledge, including the teaching rationale.
+- Decisions: the user chose to retain the existing Azure hostname after the Pages
+  options/limitations were explained. No public repository, paid upgrade or Pages
+  deployment was authorized or created. PR #4's owner-authorized merge exception
+  is recorded separately from independent review.
+- Output: Danish walkthrough, architecture illustration, updated deployment/context
+  notes and an editable Word copy in the supplied school folder outside this clone.
+  The walkthrough is the prose source for that copy; course PDFs remain outside Git.
+- Agent validation: checked assignment pages and relevant teaching/exercise sources;
+  verified HTTPS/authenticated data and unchanged complete case response after actual
+  VM deallocation/startup, inspected the dashboard, then verified deallocation again.
+  Document rendering/visual QA and repository checks are part of this change.
+- Human assessment: user selected the hosting direction and merge exception.
+  The generated explanation still requires human reading, correction and assessment
+  before use in an academic submission; no completed independent review is claimed.
 
 ## Entry template
 
