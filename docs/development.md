@@ -96,11 +96,15 @@ CREATE TABLE statement is not a migration for an already initialized database.
 
 ## Remote demonstration is a separate deployment decision
 
-The current working deployment is local Docker. The existing VM/database has not
-been integrated or verified by this implementation. For VM reuse, first inspect its
-engine/schema/access and shutdown schedule. Configure the app to its dedicated
-PostgreSQL database through private connectivity; never open the DB port publicly.
-Keep a local Compose option for every group member.
+The [shared Azure deployment guide](deployment.md) contains the selected HTTPS
+configuration, host preparation, release procedure and current verification state.
+Local development continues to use only `compose.yaml`; the shared override is an
+explicit deployment choice, not the default for every contributor.
+
+Both local Docker and the shared Azure HTTPS demo have been verified. The shared
+deployment uses its own PostgreSQL container/volume after inspecting the existing
+VM; no legacy database was reused. Never open the DB port publicly. Keep the local
+Compose option for every group member and use the deployment guide for releases.
 
 For shared access, use HTTPS through a suitable proxy/tunnel, explicit ALLOWED_HOSTS,
 PUBLIC_ORIGIN and APP_MODE=shared. Shared mode refuses startup without a 32+ character
@@ -109,5 +113,6 @@ The browser asks for it and uses tab session storage, never a URL or committed f
 This is shared prototype access, not individual production accounts or an audit-grade
 identity system. Do not expose the default unauthenticated local mode publicly.
 See [the API contract](api.md) for mutation limits, idempotency and safe failures.
-The assignment's real request from a second computer and cloud deployment evidence
-remain to be demonstrated; a local browser or in-process test is not that evidence.
+The developer's Mac has called the VM's real API over authenticated HTTPS and used
+the public dashboard. Other teammates should still try it from their own computers;
+an in-process test alone is not evidence of that access.

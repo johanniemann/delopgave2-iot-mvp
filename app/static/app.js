@@ -90,7 +90,7 @@ async function api(path, options = {}) {
     response = await fetch(path, { ...options, headers, cache: "no-store" });
   } catch {
     throw new Error(
-      "Cannot reach the application. Check that Docker is running, then refresh.",
+      "Cannot reach the application. Check your connection and that the demo server is running, then refresh.",
     );
   }
   let body;
@@ -614,7 +614,7 @@ function readingModal() {
 }
 function aboutModal() {
   modal(
-    `<div class="modal-body">${modalHeader("A clear path from data to decision", "Aeris demonstrates only the Predictive Maintenance bounded context from your group’s model.")}<ol class="about-list"><li>Record synthetic sensor readings and assess a small current-fault rule.</li><li>Review a clearly simulated forecast. Accept or reject each risk.</li><li>Create a predictive case when both a fault and a reviewed forecast exist.</li><li>Inspect the case and record a simulated external maintenance outcome.</li></ol><p class="modal-description">The API, decisions, persistence and event history really work. The forecasts are fixed illustrations. Seeded example history is labelled; no real turbine, AI inference, work order or repair is represented.</p><div class="callout">Data stays in this local prototype’s PostgreSQL database. Existing Azure services have not been changed. The dashboard uses no external fonts, trackers or chart services.</div><div class="modal-footer">${button("Back to workspace", "close", "primary")}</div></div>`,
+    `<div class="modal-body">${modalHeader("A clear path from data to decision", "Aeris demonstrates only the Predictive Maintenance bounded context from your group’s model.")}<ol class="about-list"><li>Record synthetic sensor readings and assess a small current-fault rule.</li><li>Review a clearly simulated forecast. Accept or reject each risk.</li><li>Create a predictive case when both a fault and a reviewed forecast exist.</li><li>Inspect the case and record a simulated external maintenance outcome.</li></ol><p class="modal-description">The API, decisions, persistence and event history really work. The forecasts are fixed illustrations. Seeded example history is labelled; no real turbine, AI inference, work order or repair is represented.</p><div class="callout">Data stays in this prototype’s PostgreSQL database and is accessed through the application API. The dashboard uses no external fonts, trackers or chart services.</div><div class="modal-footer">${button("Back to workspace", "close", "primary")}</div></div>`,
   );
 }
 function tokenModal() {

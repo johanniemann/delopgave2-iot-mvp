@@ -55,6 +55,22 @@ need not create entries.
 - Human assessment/adaptations: pending independent group review. Sample history
   and generated likelihoods are synthetic; no true ML/repair/verification is claimed.
 
+## 2026-11-06: shared Azure deployment preparation
+
+- Student responsible: to be confirmed by the contributing group member.
+- Tool/model: Codex; exact runtime model/version not recorded in the repository.
+- Prompt/purpose: move the accepted local prototype to the existing study-group VM,
+  protect shared access, verify persistence and enable nightly shutdown.
+- Output: optional shared Compose/Caddy configuration, private setup and release
+  helpers, authenticated live smoke check, CI coverage and deployment documentation.
+- Infrastructure: approved restricted SSH and web firewall changes; user selected
+  00:00 Copenhagen nightly shutdown and personally submitted SSH key registration.
+  The existing VM now runs the shared HTTPS demo. The user explicitly approved
+  copying only its dashboard token to a private ignored file on their Mac for
+  access/testing. See the deployment guide for actual evidence and remaining limits.
+- Human assessment/adaptations: user accepted the local experience and selected the
+  shutdown time. Independent review of this deployment change is still pending.
+
 ## Entry template
 
 ```text

@@ -26,6 +26,8 @@ silently change an assignment requirement or treat a classroom example as a mand
   selected dashboard scope, domain flow and acceptance examples. The user has now
   authorized implementation. Use [development instructions](docs/development.md)
   and the [API contract](docs/api.md) for actual run/test and state-transition rules.
+- Read the [deployment guide](docs/deployment.md) for shared Azure releases, private
+  settings, stable Compose volumes, shutdown behaviour and verified access limits.
 - Read [contribution workflow](CONTRIBUTING.md) for branches, review, validation and handoffs.
 - Use [agent setup](docs/agent-setup.md) only for tool loading, research or maintenance.
 - Check the current README and configuration for real commands. The prototype uses

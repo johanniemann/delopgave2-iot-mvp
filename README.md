@@ -31,8 +31,10 @@ Normal, invalid-data and custom-reading scenarios are also available.
 
 The initial database contains clearly labelled Seeded demo history: one pending
 forecast and two sample cases. This is illustrative history, not real human review.
-The dashboard and database run locally. Azure/VM reuse and a genuine request from
-another computer remain separate deployment demonstrations.
+Run the dashboard/database locally for development, or open the protected
+[shared Azure dashboard](https://aeris-studiegruppe-linux.swedencentral.cloudapp.azure.com/)
+with the group's private token. The VM shuts down at **00:00 Copenhagen time** and
+must be started manually for the next session. See [deployment and verification](docs/deployment.md).
 
 ```sh
 docker compose stop app db
@@ -59,6 +61,7 @@ fresh local Docker deployment/HTTP smoke check. No feature branch deploys to Azu
 ## Shared project guidance
 
 - [Run, demonstrate, test and maintain the prototype](docs/development.md)
+- [Shared Azure deployment and verification state](docs/deployment.md)
 - [API contract, demo rule and state transitions](docs/api.md) · live OpenAPI at `/docs`
 - [Project architecture, decisions and remaining work](docs/project-context.md)
 - [Prototype scope and acceptance examples](docs/prototype-plan.md)
