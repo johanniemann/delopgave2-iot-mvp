@@ -50,6 +50,14 @@ New demo scenarios preserve all existing history; there is deliberately no wipe 
    evidence is visibly simulated; Better Maintenance itself is not built.
 6. Reload: decisions and history remain. Restarting containers preserves them too.
 
+## Optional monitoring and API walkthrough
+
+The [local observability guide](observability.md) starts an isolated copy on port
+8766 plus SigNoz on port 3301. It has separate data from the normal port-8765 demo
+and stays off in the default/shared configuration. Use its helper to stop it when
+finished. The [Postman guide](postman.md) demonstrates the complete case flow with
+13 requests and 23 assertions. Neither workflow starts or deploys to Azure.
+
 ## Validation
 
 ```sh
@@ -70,7 +78,8 @@ docker compose stop test-db
 ```
 
 Application checks in GitHub Actions build/run the tests, build/deploy a fresh local
-Compose environment, and check actual HTTP endpoints/assets. The job cleans up only
+Compose environment, and check actual HTTP endpoints/assets. Newman 6.2.3 also runs the portable Postman
+collection against that disposable local deployment. The job cleans up only
 its isolated CI project. It does not deploy feature branches to Azure or receive
 production secrets. Repository checks remain a separate lightweight job.
 
@@ -80,6 +89,7 @@ production secrets. Repository checks remain a separate lightweight job.
 - `app/schemas.py`: bounded request contracts; OpenAPI is the canonical route schema.
 - `app/domain.py`: the explicit rule, case gate and resolution rule.
 - `app/service.py`: transactions, state transitions, receipts, events and demo seeds.
+- `app/telemetry.py`: opt-in bounded HTTP timing/count/span collection, no input export.
 - `app/db.py` / `app/schema.sql`: PostgreSQL pool and initial schema version 1.
 - `app/static/`: English dashboard, accessible forms, charts and responsive layout.
 - `tests/`: domain and actual PostgreSQL API/integration tests.

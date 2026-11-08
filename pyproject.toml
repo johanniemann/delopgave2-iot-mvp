@@ -7,6 +7,8 @@ dependencies = [
     "fastapi>=0.115,<1",
     "uvicorn>=0.30,<1",
     "psycopg[binary,pool]>=3.2,<4",
+    "opentelemetry-sdk>=1.38,<2",
+    "opentelemetry-exporter-otlp-proto-http>=1.38,<2",
 ]
 
 [dependency-groups]

@@ -1,0 +1,453 @@
+{
+  "info": {
+    "name": "Aeris Predictive Maintenance walkthrough",
+    "description": "A complete synthetic local workflow with assertions, including blocked case creation, human forecast review, failed and successful simulated outcomes, and persisted evidence. Start the isolated demo with python3 scripts/observability.py up. Default endpoint is loopback port 8766. No passwords/tokens are included. To use the shared Azure VM, start it deliberately, change base_url to its HTTPS origin and set collection Bearer auth to a Postman Local Vault reference; never save the actual token in the collection. Run in order. Each run preserves previous scenarios and creates a new one. Health probes are excluded from telemetry. See docs/postman.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8766"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.variables.set(\"request_id\", pm.variables.replaceIn(\"{{$guid}}\"));",
+          "pm.variables.set(\"demo_reference\", \"DEMO-POSTMAN-\" + pm.variables.get(\"request_id\"));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Check API and PostgreSQL",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/health",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "pm.test(\"PostgreSQL connected\", () => pm.expect(data.database).to.eql(\"connected\"));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Create a fresh synthetic wind-gust scenario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/scenarios",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"kind\": \"fault\",\n  \"prepare\": true,\n  \"title\": \"Postman synthetic group walkthrough\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "[\"scenario_id\", \"case_id\", \"expected_version\", \"saved_case\"].forEach(key => pm.collectionVariables.unset(key));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "if (pm.response.code !== 201) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set(\"scenario_id\", data.scenario_id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Read readings and the pending forecast",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/scenarios/{{scenario_id}}",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "if (data.scenario) pm.collectionVariables.set(\"expected_version\", data.scenario.version);",
+              "pm.test(\"96 synthetic readings and pending review\", () => { pm.expect(data.readings.length).to.eql(96); pm.expect(data.forecast.review_status).to.eql(\"Pending\"); });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Verify case is blocked before forecast review",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/scenarios/{{scenario_id}}/case",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{expected_version}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+              "if (pm.response.code !== 409) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "pm.test(\"Human review required\", () => pm.expect(data.error.code).to.eql(\"REVIEW_REQUIRED\"));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Review the simulated forecast",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/scenarios/{{scenario_id}}/review",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{expected_version}},\n  \"reviewer\": \"Postman Demo Technician\",\n  \"note\": \"Synthetic demonstration only. One illustrated risk accepted and one rejected.\",\n  \"decisions\": [\n    {\n      \"risk_id\": \"yaw-drive\",\n      \"decision\": \"Accepted\"\n    },\n    {\n      \"risk_id\": \"pitch-actuator\",\n      \"decision\": \"Rejected\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "pm.test(\"Review saved\", () => pm.expect(data.review_status).to.eql(\"Reviewed\"));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Refresh the scenario version after review",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/scenarios/{{scenario_id}}",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "if (data.scenario) pm.collectionVariables.set(\"expected_version\", data.scenario.version);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Create the predictive maintenance case",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/scenarios/{{scenario_id}}/case",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{expected_version}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "if (pm.response.code !== 201) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set(\"case_id\", data.case_id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Read the case and its current version",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/cases/{{case_id}}",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "if (data.scenario) pm.collectionVariables.set(\"expected_version\", data.scenario.version);",
+              "pm.test(\"Case open\", () => pm.expect(data.case.status).to.eql(\"Open\"));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Record a simulated failed verification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/cases/{{case_id}}/outcomes",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{expected_version}},\n  \"simulated\": true,\n  \"external_reference\": \"{{demo_reference}}\",\n  \"all_work_complete\": true,\n  \"verification\": \"Failed\",\n  \"evidence_reference\": \"DEMO-POSTMAN-EVIDENCE\",\n  \"note\": \"Simulated external outcome only. No real turbine was repaired or verified.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "pm.test(\"Failed verification keeps the case open\", () => pm.expect(data.status).to.eql(\"Open\"));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Refresh and verify the saved failed outcome",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/cases/{{case_id}}",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "if (data.scenario) pm.collectionVariables.set(\"expected_version\", data.scenario.version);",
+              "pm.test(\"One persisted simulated outcome and open case\", () => { pm.expect(data.outcomes.length).to.eql(1); pm.expect(data.outcomes[0].simulated).to.eql(true); pm.expect(data.case.status).to.eql(\"Open\"); });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Record a simulated successful completion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/cases/{{case_id}}/outcomes",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{expected_version}},\n  \"simulated\": true,\n  \"external_reference\": \"{{demo_reference}}\",\n  \"all_work_complete\": true,\n  \"verification\": \"Passed\",\n  \"evidence_reference\": \"DEMO-POSTMAN-EVIDENCE\",\n  \"note\": \"Simulated external outcome only. No real turbine was repaired or verified.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "pm.test(\"Complete passed result resolves the case\", () => pm.expect(data.status).to.eql(\"Resolved\"));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Read the resolved case and all evidence",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/cases/{{case_id}}",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "if (data.scenario) pm.collectionVariables.set(\"expected_version\", data.scenario.version);",
+              "pm.test(\"Saved readings review outcomes and resolution\", () => { pm.expect(data.readings.length).to.eql(96); pm.expect(data.forecast.review_status).to.eql(\"Reviewed\"); pm.expect(data.outcomes.length).to.eql(2); pm.expect(data.case.status).to.eql(\"Resolved\"); pm.expect(data.events.filter(event => event.name === \"Predictive Case Resolved\").length).to.eql(1); });",
+              "pm.collectionVariables.set(\"saved_case\", JSON.stringify(data));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Read the same case again or after a restart",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/cases/{{case_id}}",
+        "description": "Synthetic Predictive Maintenance walkthrough. Run in the numbered order. No data is deleted."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const data = pm.response.json();",
+              "pm.test(\"Complete evidence unchanged\", () => pm.expect(data).to.deep.eql(JSON.parse(pm.collectionVariables.get(\"saved_case\"))));",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

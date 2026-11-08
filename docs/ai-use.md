@@ -95,6 +95,22 @@ need not create entries.
   The generated explanation still requires human reading, correction and assessment
   before use in an academic submission; no completed independent review is claimed.
 
+## 2026-11-08: optional local observability and Postman walkthrough
+
+- Student responsible: to be confirmed by the contributing group member.
+- Tool/model: Codex; exact runtime model/version not recorded in the repository.
+- Prompt/purpose: implement the selected small local SigNoz demonstration, one
+  dashboard and one controlled-failure alarm; provide a repeatable Postman API flow.
+- Output: opt-in OpenTelemetry HTTP metrics/traces, isolated local Compose/Foundry
+  setup, privacy/isolation tests, dashboard/rule references, Postman collection,
+  CI validation and contributor guides. No Azure deployment or paid service.
+- Agent validation: see this change's PR and monitoring/Postman guides for actual
+  commands, results and limitations. Local API success is distinct from live alarm
+  verification. No external notification delivery is claimed.
+- Human assessment: the user selected the increment and personally created their
+  local SigNoz account. Independent code/content review remains pending; account
+  setup is not a claim of review or approval of generated implementation.
+
 ## Entry template
 
 ```text

@@ -22,6 +22,7 @@ from .db import initialize, open_pool
 from .domain import DomainError
 from .schemas import Command, NewScenario, Outcome, Reading, Review
 from .service import Maintenance
+from .telemetry import HttpTelemetry, Telemetry
 
 logger = logging.getLogger(__name__)
 STATIC = Path(__file__).with_name("static")
@@ -35,6 +36,7 @@ class Settings:
     public_origin: str = ""
     allowed_hosts: tuple[str, ...] = ("localhost", "127.0.0.1", "testserver")
     seed_demo: bool = True
+    otlp_endpoint: str = ""
 
     def __post_init__(self):
         if not self.database_url:
@@ -51,7 +53,8 @@ class Settings:
         return cls(database_url=os.environ.get("DATABASE_URL", ""), mode=os.environ.get("APP_MODE", "local"),
                    api_token=os.environ.get("API_TOKEN", ""), public_origin=os.environ.get("PUBLIC_ORIGIN", ""),
                    allowed_hosts=tuple(h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",") if h.strip()),
-                   seed_demo=os.environ.get("SEED_DEMO", "true").lower() == "true")
+                   seed_demo=os.environ.get("SEED_DEMO", "true").lower() == "true",
+                   otlp_endpoint=os.environ.get("AERIS_OTLP_ENDPOINT", ""))
 
 
 def error_response(code, message, status, headers=None):
@@ -64,14 +67,19 @@ def create_app(settings: Settings | None = None):
     @asynccontextmanager
     async def lifespan(app):
         pool = open_pool(settings.database_url)
+        app.state.telemetry = None
         try:
             initialize(pool)
             app.state.maintenance = Maintenance(pool)
             if settings.seed_demo:
                 app.state.maintenance.seed()
+            if settings.otlp_endpoint:
+                app.state.telemetry = Telemetry.connect(settings.otlp_endpoint)
             yield
         finally:
             pool.close()
+            if app.state.telemetry is not None:
+                app.state.telemetry.shutdown()
 
     app = FastAPI(title="Aeris · Predictive Maintenance", version="0.1.0", lifespan=lifespan,
                   description="Synthetic academic prototype. Forecasts and external maintenance outcomes are simulated.",
@@ -198,6 +206,7 @@ def create_app(settings: Settings | None = None):
 
     app.include_router(api)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
+    app.add_middleware(HttpTelemetry, state=app.state)
     return app
 
 
