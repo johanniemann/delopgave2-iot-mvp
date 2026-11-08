@@ -28,6 +28,10 @@ jobs:
         run: docker compose up -d --build --wait app
       - name: Smoke test running API and dashboard
         run: python3 scripts/smoke_test.py
+      - name: Run the Postman business workflow against the isolated API
+        run: >-
+          npx --yes newman@6.2.3 run postman/Aeris.postman_collection.json
+          --env-var base_url=http://127.0.0.1:8765
       - name: Validate HTTPS proxy configuration
         env:
           AERIS_HOSTNAME: demo.example.com

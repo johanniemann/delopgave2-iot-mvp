@@ -19,7 +19,10 @@ see [deployment evidence and limits](deployment.md).
 - `app/service.py`: transactional operations, version checks, replay receipts, seeds.
 - `app/db.py` / `app/schema.sql`: pooled PostgreSQL access and initial schema v1.
 - `app/static/`: same-origin HTML/CSS/JavaScript dashboard; no frontend build service.
-- `tests/`: pure rules plus real PostgreSQL HTTP/integration tests.
+- `app/telemetry.py`: optional app-scoped HTTP metrics/traces; off by default.
+- `compose.observability.yaml` / `ops/observability/`: isolated local SigNoz demo.
+- `postman/`: portable API walkthrough and assertions, also run in CI.
+- `tests/`: pure rules plus real PostgreSQL HTTP/integration and telemetry tests.
 - `compose.yaml` / `Dockerfile`: app + separate DB; isolated disposable test DB.
 - `.github/workflows/application-checks.yml`: tests, image build, local Docker
   deployment and actual HTTP smoke check; no Azure/production secrets.
@@ -101,6 +104,7 @@ without a task that needs it. No Salesforce/Business Central integration is sele
 | Threshold, units and equality boundary | Synthetic wind_speed in m/s; strictly >28.0 opens fault, equality does not; invalid/null readings retained and excluded | A demo configuration, not an equipment safety limit |
 | Forecast and notification | Fixed illustrative risks; saved human review; visible dashboard fault/review queue | No real inference, email/SMS or paid service |
 | Deployment | Local Compose plus shared Azure Compose/Caddy HTTPS deployment; private DB, loopback app, shared bearer guard; Mac-to-VM API verified; midnight Copenhagen shutdown saved; actual VM deallocation/startup and saved evidence verified on 2026-11-07 | Other members still need to try shared access; actual scheduled stop has not been observed; release promotion is manual |
+| Local observability | Opt-in OpenTelemetry SDK and self-hosted SigNoz on each developer's computer, separate Compose projects/data; bounded HTTP fields only; no SQL/body/token export | Team learning choice selected 2026-11-08; not deployed on the small Azure VM; see [monitoring guide](observability.md) |
 | Branch enforcement | Feature branches + independent PR review are team conventions | Hosting enforcement still not configured/verified by this implementation |
 
 On 2026-11-07 the owner explicitly authorized merging PR #4 after its five checks

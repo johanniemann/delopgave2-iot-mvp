@@ -28,6 +28,9 @@ silently change an assignment requirement or treat a classroom example as a mand
   and the [API contract](docs/api.md) for actual run/test and state-transition rules.
 - Read the [deployment guide](docs/deployment.md) for shared Azure releases, private
   settings, stable Compose volumes, shutdown behaviour and verified access limits.
+- Optional local monitoring and its isolated failure test are described in
+  [observability](docs/observability.md); [Postman](docs/postman.md) covers the
+  portable API walkthrough. Keep telemetry off in default/shared deployments.
 - Read [contribution workflow](CONTRIBUTING.md) for branches, review, validation and handoffs.
 - Use [agent setup](docs/agent-setup.md) only for tool loading, research or maintenance.
 - Check the current README and configuration for real commands. The prototype uses

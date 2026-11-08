@@ -1,0 +1,14 @@
+# Used only by scripts/observability.py in the isolated aeris-observed project.
+services:
+  app:
+    environment:
+      AERIS_OTLP_ENDPOINT: http://ingester:4318
+    networks: [default, monitoring]
+    restart: 'no'
+  db:
+    restart: 'no'
+
+networks:
+  monitoring:
+    external: true
+    name: aeris-monitoring_signoz-network

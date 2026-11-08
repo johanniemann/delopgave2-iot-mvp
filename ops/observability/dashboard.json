@@ -1,0 +1,201 @@
+{
+  "spec": {
+    "display": {
+      "description": "Local learning demo: API traffic and estimated p95 response time. Synthetic data; no Azure deployment or external uptime monitoring.",
+      "name": "Aeris local API monitoring"
+    },
+    "duration": "",
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "display": {
+            "title": ""
+          },
+          "items": [
+            {
+              "content": {
+                "$ref": "#/spec/panels/b4cf82da-4209-45e3-aa7c-eca5fd33aa17"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "content": {
+                "$ref": "#/spec/panels/3f9d18bf-4a2c-4aff-93e0-951602e97af4"
+              },
+              "height": 6,
+              "width": 6,
+              "x": 6,
+              "y": 0
+            }
+          ]
+        }
+      }
+    ],
+    "panels": {
+      "3f9d18bf-4a2c-4aff-93e0-951602e97af4": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Estimated 95th percentile of API response times in milliseconds, calculated from the recorded histogram. Synthetic local demonstration.",
+            "name": "API response time p95 (ms)"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "ms"
+              },
+              "legend": {
+                "customColors": null,
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "metricName": "aeris.http.duration.bucket",
+                              "spaceAggregation": "p95",
+                              "temporality": "",
+                              "timeAggregation": "rate"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "legend": "",
+                          "name": "A",
+                          "signal": "metrics",
+                          "source": ""
+                        },
+                        "type": "builder_query"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "b4cf82da-4209-45e3-aa7c-eca5fd33aa17": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "description": "Completed API requests in the isolated local Aeris demo. Health probes and static assets are excluded.",
+            "name": "API requests per second"
+          },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "axes": {
+                "isLogScale": false,
+                "softMax": null,
+                "softMin": null
+              },
+              "chartAppearance": {
+                "fillMode": "none",
+                "lineInterpolation": "spline",
+                "lineStyle": "solid",
+                "showPoints": false,
+                "spanGaps": {
+                  "fillLessThan": "",
+                  "fillOnlyBelow": false
+                }
+              },
+              "formatting": {
+                "decimalPrecision": "2",
+                "unit": "{request}"
+              },
+              "legend": {
+                "customColors": null,
+                "mode": "list",
+                "position": "bottom"
+              },
+              "thresholds": null,
+              "visualization": {
+                "fillSpans": false,
+                "timePreference": "global_time"
+              }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "spec": {
+                          "aggregations": [
+                            {
+                              "metricName": "aeris.http.requests",
+                              "spaceAggregation": "sum",
+                              "temporality": "",
+                              "timeAggregation": "rate"
+                            }
+                          ],
+                          "disabled": false,
+                          "filter": {
+                            "expression": ""
+                          },
+                          "legend": "",
+                          "name": "A",
+                          "signal": "metrics",
+                          "source": ""
+                        },
+                        "type": "builder_query"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "refreshInterval": "",
+    "variables": []
+  },
+  "tags": [],
+  "image": ""
+}

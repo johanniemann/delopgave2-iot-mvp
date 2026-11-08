@@ -1,0 +1,73 @@
+{
+  "alert": "Aeris local API HTTP 503",
+  "alertType": "METRIC_BASED_ALERT",
+  "ruleType": "threshold_rule",
+  "condition": {
+    "thresholds": {
+      "kind": "basic",
+      "spec": [
+        {
+          "name": "critical",
+          "target": 0,
+          "matchType": "at_least_once",
+          "op": "above",
+          "channels": [],
+          "targetUnit": ""
+        }
+      ]
+    },
+    "compositeQuery": {
+      "queryType": "builder",
+      "panelType": "graph",
+      "unit": "{request}",
+      "queries": [
+        {
+          "type": "builder_query",
+          "spec": {
+            "name": "A",
+            "signal": "metrics",
+            "source": "",
+            "stepInterval": null,
+            "disabled": false,
+            "filter": {
+              "expression": "service.name = 'aeris-api' AND http.response.status_code = '503'"
+            },
+            "aggregations": [
+              {
+                "metricName": "aeris.http.requests",
+                "timeAggregation": "rate",
+                "spaceAggregation": "sum"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "selectedQueryName": "A",
+    "alertOnAbsent": false,
+    "requireMinPoints": false
+  },
+  "annotations": {
+    "description": "LOCAL DEMO: Aeris returned HTTP 503 while its isolated database was unavailable. Check the app/database and recovery. Visible in SigNoz only; no external notification channel is configured.",
+    "summary": "LOCAL DEMO: Aeris returned HTTP 503 while its isolated database was unavailable. Check the app/database and recovery. Visible in SigNoz only; no external notification channel is configured."
+  },
+  "labels": {},
+  "notificationSettings": {
+    "groupBy": [],
+    "usePolicy": true,
+    "renotify": {
+      "enabled": false,
+      "interval": "30m",
+      "alertStates": []
+    }
+  },
+  "evaluation": {
+    "kind": "rolling",
+    "spec": {
+      "evalWindow": "1m",
+      "frequency": "1m"
+    }
+  },
+  "schemaVersion": "v2alpha1",
+  "version": "v5"
+}
