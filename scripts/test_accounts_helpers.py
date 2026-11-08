@@ -1,5 +1,6 @@
 """Credentials stay bound to the intended target and out of CLI arguments."""
 import json
+import secrets
 from pathlib import Path
 import subprocess
 import tempfile
@@ -19,7 +20,7 @@ class AccountHelperTests(unittest.TestCase):
     def test_wrong_target_credentials_are_never_sent(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'credentials.json'
-            path.write_text(json.dumps({"base_url": "https://other.example", "technician": {"username": "sample", "password": "private"}}))
+            path.write_text(json.dumps({"base_url": "https://other.example", "technician": {"username": "sample", "password": secrets.token_urlsafe(24)}}))
             path.chmod(0o600)
             client = ApiClient("https://expected.example")
             with patch.object(client, 'request') as request:
@@ -30,7 +31,7 @@ class AccountHelperTests(unittest.TestCase):
     def test_runner_uses_private_temporary_environment_and_preserves_failure(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            secret = 'a-runtime-secret-never-in-arguments'
+            secret = secrets.token_urlsafe(24)
             path = root / '.env.accounts-8765.json'
             path.write_text(json.dumps({"base_url": "http://127.0.0.1:8765", "technician": {"username": "sample", "password": secret}}))
             path.chmod(0o600)

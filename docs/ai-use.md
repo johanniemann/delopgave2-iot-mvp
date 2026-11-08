@@ -124,6 +124,9 @@ need not create entries.
   actual local Admin and Technician browser views, authenticated HTTP/Postman checks,
   and a complete existing-case comparison before/after the live local upgrade.
   See the PR for exact results and remaining limits; no Azure promotion claimed.
+- Scanner follow-up: incident #39832719 was statically traced to a negative
+  password-length test (not a usable credential). Fixed test-password literals were
+  replaced by generated valid/invalid values; secret scanning remains enabled.
 - Human assessment: pending group review. Local generated demo accounts and synthetic
   tests are not evidence of other group members' review or real-world identity checks.
 

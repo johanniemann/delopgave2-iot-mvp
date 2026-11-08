@@ -101,7 +101,7 @@ def test_temporary_password_gate_and_csrf_on_every_authenticated_write(client):
 def test_password_change_revokes_all_sessions_and_old_password(client):
     other = fresh(client)
     login(other, "technician", client.test_password)
-    new = "  a unique passphrase with spaces  "
+    new = "  " + secrets.token_urlsafe(24) + "  "
     assert client.post("/api/auth/password", json={"current_password": client.test_password, "new_password": new}).status_code == 200
     assert client.get("/api/overview").status_code == other.get("/api/overview").status_code == 401
     assert client.post("/api/auth/login", json={"username": "technician", "password": client.test_password}).status_code == 401
@@ -178,7 +178,7 @@ def test_admin_reset_requires_new_personal_password_and_revokes_prior_session(cl
 def test_unknown_fields_weak_passwords_and_duplicate_usernames_are_refused(client):
     admin(client)
     body = {"username": "valid-user", "display_name": "A Person", "password": secrets.token_urlsafe(24)}
-    for extra in ({"password": "too-short"}, {"role": "superadmin"}, {"active": True}, {"display_name": "  "}):
+    for extra in ({"password": secrets.token_urlsafe(4)}, {"role": "superadmin"}, {"active": True}, {"display_name": "  "}):
         response = client.post("/api/admin/users", json=body | extra)
         assert response.status_code == 422 and body["password"] not in response.text
     assert client.post("/api/admin/users", json=body).status_code == 201
@@ -201,9 +201,9 @@ def test_idle_and_absolute_expiry_and_only_hashed_session_ids_are_stored(client)
 def test_login_failure_is_generic_and_database_throttle_survives_new_client(client):
     other = fresh(client)
     for name in ("missing", "technician"):
-        assert other.post("/api/auth/login", json={"username": name, "password": "wrong"}).json()["error"]["code"] == "INVALID_CREDENTIALS"
+        assert other.post("/api/auth/login", json={"username": name, "password": secrets.token_urlsafe(4)}).json()["error"]["code"] == "INVALID_CREDENTIALS"
     for _ in range(9):
-        other.post("/api/auth/login", json={"username": "technician", "password": "wrong"})
+        other.post("/api/auth/login", json={"username": "technician", "password": secrets.token_urlsafe(4)})
     result = fresh(client).post("/api/auth/login", json={"username": "technician", "password": client.test_password})
     assert result.status_code == 429
 
