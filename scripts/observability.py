@@ -78,8 +78,12 @@ def prepare():
             raise SystemExit("Unexpected Foundry archive entry.")
         binary.write_bytes(bundle.extractfile(entry).read())
     binary.chmod(0o700)
+    # Foundry writes a resolved .lock beside its input; keep that generated file
+    # in ignored runtime storage as well as the rendered Compose configuration.
+    casting = RUNTIME / "casting.yaml"
+    casting.write_bytes((ROOT / "ops/observability/casting.yaml").read_bytes())
     run([str(binary), "--no-ledger", "--no-updater", "forge", "-f",
-         str(ROOT / "ops/observability/casting.yaml"), "-p", str(RUNTIME / "pours")])
+         str(casting), "-p", str(RUNTIME / "pours")])
 
 
 def get(path):
