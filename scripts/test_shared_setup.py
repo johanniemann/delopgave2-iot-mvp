@@ -19,7 +19,7 @@ class SharedSetupTests(unittest.TestCase):
             original = target.read_bytes()
             values = dict(line.split("=", 1) for line in original.decode().splitlines())
             self.assertEqual(values["APP_MODE"], "shared")
-            for name in ("API_TOKEN", "POSTGRES_PASSWORD"):
+            for name in ("POSTGRES_PASSWORD",):
                 self.assertGreaterEqual(len(values[name]), 32)
                 self.assertNotIn(values[name], first.stdout + first.stderr)
             if sys.platform != "win32":

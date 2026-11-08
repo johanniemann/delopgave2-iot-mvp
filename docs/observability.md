@@ -37,7 +37,9 @@ The initial histogram helper is downloaded by the upstream setup from its fixed
 official `histogram-quantile/v0.0.1` release.
 
 The helper creates a separate ignored, owner-readable `.env.observability` once.
-It preserves existing settings. Generated configuration lives in
+It preserves existing settings. The helper also prepares individual local
+Admin/Technician accounts; passwords stay in ignored `.env.accounts-8766.json`.
+Sign in to Aeris using those accounts, separate from the SigNoz account. Generated configuration lives in
 `.codex-log/observability/`; do not edit it manually. Change the versioned casting
 file and rerun `up`. Startup dependencies wait for ClickHouse/migrations/SigNoz.
 
@@ -134,9 +136,12 @@ for the complete normal business flow.
   immediate notification or external delivery.
 - Stopping only the local collector left all three API probes successful (HTTP 200);
   the collector was restarted afterwards. Monitoring is not an API availability dependency.
-- The real PostgreSQL application suite passed 51 tests, including eight telemetry
-  privacy/opt-in tests. The standard-library helper suite passed 15 tests.
-- The Postman walkthrough passed all 13 requests and 23 assertions locally.
+- The initial telemetry increment passed 51 PostgreSQL application tests and 15
+  helper tests. The later individual-account increment passed 70 application tests
+  and 18 helper tests, including real login telemetry privacy.
+- The original Postman walkthrough passed 13 requests/23 assertions. After the
+  individual-account change it passed 17 requests/28 assertions, including sign-in,
+  Technician admin denial and sign-out. Helpers now authenticate before traffic/failure tests.
 
 ## What is collected
 

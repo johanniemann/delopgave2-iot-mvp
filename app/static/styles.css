@@ -2159,3 +2159,20 @@ th {
     font-size: 10px;
   }
 }
+
+/* Accounts share the existing workspace design and require no UI dependency. */
+.auth-shell { display: grid; place-items: center; min-height: 65vh; padding: 24px 0; }
+.auth-card { width: min(100%, 460px); padding: 32px; }
+.auth-card h1 { margin: 12px 0 8px; font-size: 30px; letter-spacing: -1px; }
+.auth-card > p { color: var(--muted); margin-bottom: 24px; }
+.auth-card form, #password-form, #user-create-form, #user-edit-form, #user-password-form { display: grid; gap: 18px; }
+.auth-error { color: var(--red); font-size: 13px; }
+.auth-card .callout { margin-top: 24px; }
+.profile-identity { flex: 1; min-width: 0; }
+.profile-identity .text-button { text-align: left; overflow-wrap: anywhere; }
+.profile .icon-button { flex-shrink: 0; width: 28px; height: 28px; }
+.profile small { display: block; font-size: 10px; }
+.account-toggle { display: flex; gap: 10px; align-items: center; }
+.account-toggle input { width: auto; }
+.account-audit .definition-row p { margin: 4px 0 0; }
+.table-scroll { overflow-x: auto; }

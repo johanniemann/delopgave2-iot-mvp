@@ -41,16 +41,22 @@ are unique per case; replay must not add another resolution event. No reset/wipe
 
 ## Access and errors
 
-Local mode binds Docker's application port to loopback only. Shared mode requires
-`API_TOKEN` (32+ characters) as `Authorization: Bearer …`, explicit allowed hosts and
-TLS through a suitable deployment proxy. The browser asks for the token and keeps it
-in tab session storage only; no token is embedded in the source or page.
+Both local and shared modes require an individual **Technician** or **Admin**
+account. Authenticated users can use all maintenance routes; only Admin can use
+`/api/admin/*`. No bearer-token bypass or public registration exists. Login, logout,
+password change and user-management routes are specified in
+[authentication](authentication.md). Cookies are HttpOnly/SameSite=Strict and Secure
+in shared HTTPS mode. Every authenticated write needs `X-CSRF-Token` from login/me.
+The optional legacy `reviewer` field is ignored by HTTP: the saved reviewer name and
+UUID come from the account. Old saved/seeded names remain unchanged.
+
 API writes require JSON and a bounded Content-Length (maximum 16 KiB); chunked writes
 are not supported. Cross-origin writes are rejected. There are 60 writes/minute/IP
 per application process, excluding health/read requests. This is a prototype guard,
 not a distributed production access system.
 
-Errors: 401 missing/invalid shared token, 403 foreign origin, 404 unknown record,
+Errors: 401 missing/expired session or invalid credentials, 403 insufficient role,
+required password change, missing/invalid CSRF or foreign origin, 404 unknown record,
 409 state/idempotency/version conflict, 411 length required, 413 oversized body,
 415 non-JSON write, 422 invalid fields, 429 rate limit, 503 database unavailable.
 Validation responses omit request bodies; database/internal details are not returned.

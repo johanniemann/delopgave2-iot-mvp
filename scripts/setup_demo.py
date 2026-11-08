@@ -9,7 +9,6 @@ def main():
         print("Existing .env preserved. Local prototype settings are ready.")
         return
     content = (f"POSTGRES_PASSWORD={secrets.token_urlsafe(32)}\n"
-               f"API_TOKEN={secrets.token_urlsafe(32)}\n"
                "APP_MODE=local\nAPP_PORT=8765\n")
     try:
         with target.open("x", encoding="utf-8") as stream:

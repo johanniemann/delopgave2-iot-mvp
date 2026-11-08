@@ -45,7 +45,8 @@ class RiskDecision(BaseModel):
 
 
 class Review(Command):
-    reviewer: str = Field(min_length=2, max_length=80)
+    reviewer: str = Field(default="Authenticated specialist", min_length=2, max_length=80,
+                          description="Legacy input, ignored by HTTP API; identity comes from the signed-in account.")
     note: str = Field(min_length=3, max_length=1000)
     decisions: list[RiskDecision] = Field(min_length=2, max_length=2)
 

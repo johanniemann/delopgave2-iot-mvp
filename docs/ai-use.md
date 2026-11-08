@@ -111,6 +111,22 @@ need not create entries.
   local SigNoz account. Independent code/content review remains pending; account
   setup is not a claim of review or approval of generated implementation.
 
+## 2026-11-08: individual logins and two application roles
+
+- Student responsible: to be confirmed by the contributing group member.
+- Tool/model: Codex; exact runtime model/version not recorded in the repository.
+- Prompt/purpose: implement Technician/Maintenance specialist and Admin access,
+  with Admin able to inspect and manage users; preserve the simple prototype.
+- Output: individual password/session authentication, CSRF and API role checks,
+  user administration UI, forward migration, account history, host bootstrap/recovery,
+  authenticated Postman/CI/helpers, integration tests and updated guides.
+- Agent validation: real PostgreSQL authorization/revocation/expiry/migration tests,
+  actual local Admin and Technician browser views, authenticated HTTP/Postman checks,
+  and a complete existing-case comparison before/after the live local upgrade.
+  See the PR for exact results and remaining limits; no Azure promotion claimed.
+- Human assessment: pending group review. Local generated demo accounts and synthetic
+  tests are not evidence of other group members' review or real-world identity checks.
+
 ## Entry template
 
 ```text

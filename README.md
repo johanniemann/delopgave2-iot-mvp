@@ -16,9 +16,13 @@ With Docker Desktop running, from this repository's root:
 ```sh
 python3 scripts/setup_demo.py
 docker compose up -d --build --wait app
+python3 scripts/setup_accounts.py
 ```
 
-Open **http://localhost:8765**. Each group member uses their own clone and local
+Open **http://localhost:8765** and sign in as `admin` or `technician` using the
+random credentials in ignored `.env.accounts-8765.json`. Admin adds/manages users;
+Technician is the Maintenance specialist role. See [individual accounts](docs/authentication.md).
+Each group member uses their own clone and local
 settings. The setup script creates an ignored `.env` with random credentials;
 it preserves existing settings. No local Python package or Node install is needed.
 Docker runs Python 3.13; helper scripts need Python 3.10+.
@@ -33,7 +37,8 @@ The initial database contains clearly labelled Seeded demo history: one pending
 forecast and two sample cases. This is illustrative history, not real human review.
 Run the dashboard/database locally for development, or open the protected
 [shared Azure dashboard](https://aeris-studiegruppe-linux.swedencentral.cloudapp.azure.com/)
-with the group's private token. The VM shuts down at **00:00 Copenhagen time** and
+when the VM is deliberately started. Its earlier installed release still uses the
+shared token until the individual-account release is promoted. The VM shuts down at **00:00 Copenhagen time** and
 must be started manually for the next session. See [deployment and verification](docs/deployment.md).
 
 ```sh
@@ -63,6 +68,7 @@ fresh local Docker deployment/HTTP smoke check. No feature branch deploys to Azu
 - [Projektet forklaret på dansk uden tekniske forkundskaber](docs/project-walkthrough-da.md)
 - [Run, demonstrate, test and maintain the prototype](docs/development.md)
 - [Optional local SigNoz monitoring and safe failure test](docs/observability.md)
+- [Individual logins, roles and user administration](docs/authentication.md)
 - [Postman API walkthrough](docs/postman.md)
 - [Shared Azure deployment and verification state](docs/deployment.md)
 - [API contract, demo rule and state transitions](docs/api.md) · live OpenAPI at `/docs`

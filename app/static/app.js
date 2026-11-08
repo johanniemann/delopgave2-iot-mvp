@@ -52,6 +52,10 @@ const badge = (label, color = "") =>
 const button = (label, action, style = "", extra = "") =>
   `<button class="button ${style}" data-action="${action}" ${extra}>${label}</button>`;
 const S = {
+  user: null,
+  csrf: "",
+  users: [],
+  accountEvents: [],
   data: null,
   detail: null,
   view: "overview",
@@ -83,11 +87,10 @@ function connection(ok) {
 }
 async function api(path, options = {}) {
   const headers = { Accept: "application/json", ...options.headers };
-  const token = sessionStorage.getItem("aeris-token");
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (options.method && options.method !== "GET" && S.csrf) headers["X-CSRF-Token"] = S.csrf;
   let response;
   try {
-    response = await fetch(path, { ...options, headers, cache: "no-store" });
+    response = await fetch(path, { ...options, credentials: "same-origin", headers, cache: "no-store" });
   } catch {
     throw new Error(
       "Cannot reach the application. Check your connection and that the demo server is running, then refresh.",
@@ -109,7 +112,8 @@ async function api(path, options = {}) {
       .join(" ");
     const error = new Error(fields ? `${message} ${fields}` : message);
     error.status = response.status;
-    if (response.status === 401) tokenModal();
+    if (body.error?.code === "AUTH_REQUIRED") signedOut();
+    if (body.error?.code === "PASSWORD_CHANGE_REQUIRED") { S.user.must_change_password = true; render(); }
     throw error;
   }
   return body;
@@ -133,6 +137,12 @@ async function mutate(path, fields = {}, method = "POST") {
   }
 }
 async function load(scenarioId = S.detail?.scenario.id) {
+  const session = await api("/api/auth/me");
+  S.user = session.user;
+  S.csrf = session.csrf_token;
+  if (S.user.must_change_password) { render(); return; }
+  if (S.view === "users" && S.user.role !== "admin") S.view = "overview";
+  if (S.view === "users") await loadUsers();
   const data = await api("/api/overview");
   const selected =
     scenarioId && data.scenarios.some((s) => s.id === scenarioId)
@@ -194,6 +204,7 @@ async function act(task, trigger) {
   }
 }
 function navigate(view) {
+  if (!S.user || (view === "users" && S.user.role !== "admin")) return;
   S.view = view;
   S.editing = false;
   S.decisions = {};
@@ -209,6 +220,7 @@ function navigation() {
     ["cases", "folder", "Predictive cases"],
     ["activity", "clock", "Activity log"],
   ];
+  if (S.user.role === "admin") items.push(["users", "grid", "User administration"]);
   document.getElementById("navigation").innerHTML = items
     .map(
       ([key, symbol, label]) =>
@@ -238,6 +250,7 @@ function heading() {
       "Case workspace",
       "Follow the evidence, decisions and outcome of this predictive case.",
     ],
+    users: ["User administration", "Manage access to the shared maintenance workspace."],
     activity: [
       "Activity log",
       "Every recorded step, from sensor readings to case resolution.",
@@ -247,6 +260,13 @@ function heading() {
   return `<div class="page-heading"><div><div class="eyebrow">WIND TURBINE OPERATIONS</div><h1>${title}</h1><p>${subtitle}</p></div><div class="heading-actions"><span class="date-label">${dt(new Date(), { hour: undefined, minute: undefined, year: "numeric" })}</span>${button(icon("plus") + "New demo scenario", "new", "primary")}</div></div><div class="notice">${icon("info")}<span><strong>A working prototype.</strong> Sensor data, forecasts and external maintenance outcomes are simulated.</span><button class="text-button" data-action="about">How it works ↗</button></div>`;
 }
 function render() {
+  profile();
+  if (!S.user) { loginView(); return; }
+  if (S.user.must_change_password) {
+    document.getElementById("navigation").innerHTML = "";
+    document.getElementById("main").innerHTML = `<div class="auth-shell"><section class="card auth-card"><div class="eyebrow">ACCOUNT SECURITY</div><h1>Choose your own password</h1><p>Your administrator supplied a temporary password. Change it before opening the workspace.</p>${passwordForm()}</section></div>`;
+    return;
+  }
   if (!S.data) return;
   navigation();
   const view =
@@ -257,6 +277,7 @@ function render() {
       cases: casesView,
       case: caseView,
       activity: activityView,
+      users: usersView,
     }[S.view] || overviewView;
   document.getElementById("main").innerHTML =
     heading() +
@@ -480,7 +501,7 @@ function reviewView() {
     const editable =
       !S.detail.case && (f.review_status === "Pending" || S.editing);
     const record = f.review;
-    content = `<section class="card"><div class="review-intro"><div class="review-symbol">${icon("spark")}</div><div><h2>Failure forecast <span class="subtitle-id mono">${esc(f.id)}</span></h2><p>Two independent risk illustrations for specialist review.</p><span class="simulation-label">Simulated forecast · No real AI analysis</span></div></div>${editable ? '<form id="review-form">' : ""}${f.risks.map((r) => riskCard(r, editable)).join("")}${editable ? `<div class="review-form-fields"><div class="field"><span>Reviewed by</span><input id="reviewer" name="reviewer" aria-label="Reviewed by" required minlength="2" maxlength="80" value="${esc(record?.reviewer || "Demo Technician")}"><small>A demo identity, not a verified production account.</small></div><label class="field"><span>Review note</span><textarea id="review-note" name="note" placeholder="Explain which evidence informed your decisions…" required minlength="3" maxlength="1000">${esc(record?.note || "")}</textarea></label><div class="form-actions"><span class="form-hint">Choose a decision for both risks.<br>Your decisions and note will be saved.</span><button type="submit" id="save-review" class="button primary" disabled>${icon("check")}Save forecast review</button></div></div></form>` : `<div class="review-record"><strong class="small">Forecast reviewed ${badge("Saved", "green")}</strong><p>${esc(record?.note)}</p><div class="meta">${esc(record?.reviewer)} · ${record ? dt(record.reviewed_at) : ""}</div>${!S.detail.case ? button("Edit review", "edit-review", "wide-button") : ""}</div>`}</section>`;
+    content = `<section class="card"><div class="review-intro"><div class="review-symbol">${icon("spark")}</div><div><h2>Failure forecast <span class="subtitle-id mono">${esc(f.id)}</span></h2><p>Two independent risk illustrations for specialist review.</p><span class="simulation-label">Simulated forecast · No real AI analysis</span></div></div>${editable ? '<form id="review-form">' : ""}${f.risks.map((r) => riskCard(r, editable)).join("")}${editable ? `<div class="review-form-fields"><div class="field"><span>Reviewed by</span><input id="reviewer" name="reviewer" aria-label="Reviewed by" required minlength="2" maxlength="80" value="${esc(S.user.display_name)}" readonly><small>Saved as your signed-in account. Existing reviews retain their original identity.</small></div><label class="field"><span>Review note</span><textarea id="review-note" name="note" placeholder="Explain which evidence informed your decisions…" required minlength="3" maxlength="1000">${esc(record?.note || "")}</textarea></label><div class="form-actions"><span class="form-hint">Choose a decision for both risks.<br>Your decisions and note will be saved.</span><button type="submit" id="save-review" class="button primary" disabled>${icon("check")}Save forecast review</button></div></div></form>` : `<div class="review-record"><strong class="small">Forecast reviewed ${badge("Saved", "green")}</strong><p>${esc(record?.note)}</p><div class="meta">${esc(record?.reviewer)} · ${record ? dt(record.reviewed_at) : ""}</div>${!S.detail.case ? button("Edit review", "edit-review", "wide-button") : ""}</div>`}</section>`;
   }
   return (
     picker() +
@@ -563,6 +584,7 @@ function modalHeader(title, description) {
 }
 function closeModal() {
   document.getElementById("modal").close();
+  document.getElementById("modal-content").innerHTML = "";
 }
 function newModal() {
   S.newKind = "fault";
@@ -617,11 +639,6 @@ function aboutModal() {
     `<div class="modal-body">${modalHeader("A clear path from data to decision", "Aeris demonstrates only the Predictive Maintenance bounded context from your group’s model.")}<ol class="about-list"><li>Record synthetic sensor readings and assess a small current-fault rule.</li><li>Review a clearly simulated forecast. Accept or reject each risk.</li><li>Create a predictive case when both a fault and a reviewed forecast exist.</li><li>Inspect the case and record a simulated external maintenance outcome.</li></ol><p class="modal-description">The API, decisions, persistence and event history really work. The forecasts are fixed illustrations. Seeded example history is labelled; no real turbine, AI inference, work order or repair is represented.</p><div class="callout">Data stays in this prototype’s PostgreSQL database and is accessed through the application API. The dashboard uses no external fonts, trackers or chart services.</div><div class="modal-footer">${button("Back to workspace", "close", "primary")}</div></div>`,
   );
 }
-function tokenModal() {
-  modal(
-    `<div class="modal-body">${modalHeader("Open the shared demo", "Enter the access token provided by your group. It is kept only in this tab’s session storage.")}<form id="token-form"><label class="field"><span>Access token</span><input type="password" name="token" required autocomplete="off"></label><div id="modal-error" role="alert" class="small"></div><div class="modal-footer"><button class="button primary" type="submit">Open workspace</button></div></form></div>`,
-  );
-}
 function exportCases() {
   const rows = [
     [
@@ -670,7 +687,18 @@ document.addEventListener("click", (event) => {
   const el = event.target.closest("[data-action]");
   if (!el || el.disabled) return;
   const action = el.dataset.action;
+  if (["logout", "account", "user-new", "user-edit", "user-password"].includes(action)) {
+    if (action === "account") { if (S.user.must_change_password) { render(); return; } modal(`<div class="modal-body">${modalHeader("Change password", "Sign in again after changing your password. All your other sessions will end.")}${passwordForm()}</div>`); return; }
+    if (action === "user-new") { userModal(); return; }
+    if (action === "user-edit") { userModal(S.users.find(u => u.id === el.dataset.userId)); return; }
+    if (action === "user-password") { resetPasswordModal(S.users.find(u => u.id === el.dataset.userId)); return; }
+    act(async () => { await accountWrite("/api/auth/logout", {}); signedOut(); }, el);
+    return;
+  }
   if (action === "nav") {
+    if (el.dataset.view === "users") {
+      act(async () => { await loadUsers(); navigate("users"); }, el); return;
+    }
     navigate(el.dataset.view);
     return;
   }
@@ -799,7 +827,11 @@ document.addEventListener("submit", (event) => {
       "review-form",
       "outcome-form",
       "reading-form",
-      "token-form",
+      "login-form",
+      "password-form",
+      "user-create-form",
+      "user-edit-form",
+      "user-password-form",
     ].includes(form.id)
   )
     return;
@@ -830,7 +862,6 @@ document.addEventListener("submit", (event) => {
         `/api/scenarios/${S.detail.scenario.id}/review`,
         {
           expected_version: S.detail.scenario.version,
-          reviewer: f.reviewer,
           note: f.note,
           decisions,
         },
@@ -873,11 +904,28 @@ document.addEventListener("submit", (event) => {
       await load();
       toast("Synthetic reading recorded.");
     }
-    if (form.id === "token-form") {
-      sessionStorage.setItem("aeris-token", f.token.trim());
+    if (form.id === "login-form") {
+      const session = await accountWrite("/api/auth/login", { username: f.username, password: f.password });
+      form.reset();
+      S.user = session.user; S.csrf = session.csrf_token;
       await load();
-      closeModal();
-      toast("Shared workspace opened.");
+    }
+    if (form.id === "password-form") {
+      if (f.new_password !== f.confirm_password) throw new Error("The new passwords do not match.");
+      await accountWrite("/api/auth/password", { current_password: f.current_password, new_password: f.new_password });
+      form.reset(); closeModal(); signedOut("Password changed. Sign in with your new password.");
+    }
+    if (form.id === "user-create-form") {
+      await accountWrite("/api/admin/users", { username: f.username, display_name: f.display_name, role: f.role, password: f.password });
+      form.reset(); closeModal(); await loadUsers(); render(); toast("User created. Supply their temporary password privately.");
+    }
+    if (form.id === "user-edit-form") {
+      await accountWrite(`/api/admin/users/${form.dataset.userId}`, { display_name: f.display_name, role: f.role, active: f.active === "on", expected_version: Number(form.dataset.version) }, "PATCH");
+      closeModal(); await load(); toast("User updated. Their existing sessions have ended.");
+    }
+    if (form.id === "user-password-form") {
+      await accountWrite(`/api/admin/users/${form.dataset.userId}/password`, { password: f.password, expected_version: Number(form.dataset.version) });
+      form.reset(); closeModal(); await loadUsers(); render(); toast("Temporary password set. Existing sessions have ended.");
     }
   }, submit);
 });
@@ -898,18 +946,56 @@ window.addEventListener("hashchange", () => {
   if (["overview", "history", "review", "cases", "activity"].includes(next))
     navigate(next);
 });
+// Remove the former shared-token value; individual sessions use HttpOnly cookies.
+sessionStorage.removeItem("aeris-token");
 (async () => {
   try {
     await load();
     const next = location.hash.slice(1);
-    if (["history", "review", "cases", "activity"].includes(next))
-      navigate(next);
+    if (["history", "review", "cases", "activity"].includes(next) && !S.user.must_change_password) navigate(next);
   } catch (error) {
-    connection(false);
-    document.getElementById("main").innerHTML =
-      `<div class="loading-state">${icon("database")}<h1>Workspace unavailable</h1><p>${esc(error.message)}</p><div class="action-strip">${button("Try again", "retry-start", "primary")}</div></div>`;
+    if (error.status === 401) signedOut();
+    else { signedOut(error.message); connection(false); }
   }
 })();
 document.addEventListener("click", (event) => {
   if (event.target.closest('[data-action="retry-start"]')) location.reload();
 });
+
+function profile() {
+  const u = S.user;
+  document.getElementById("profile").innerHTML = u
+    ? `<span class="avatar">${esc(u.display_name.slice(0, 2).toUpperCase())}</span><div class="profile-identity"><button class="text-button" data-action="account">${esc(u.display_name)}</button><small>${u.role === "admin" ? "Administrator" : "Technician · Maintenance specialist"}</small></div><button class="icon-button" data-action="logout" aria-label="Sign out" title="Sign out">${icon("arrow")}</button>`
+    : `<span class="avatar">A</span><div><strong>Aeris workspace</strong><small>Sign in to continue</small></div>`;
+}
+function signedOut(message = "") {
+  S.user = null; S.csrf = ""; S.data = null; S.detail = null;
+  S.users = []; S.accountEvents = []; S.pending.clear(); S.view = "overview";
+  closeModal(); profile(); loginView(message);
+}
+function loginView(message = "") {
+  document.getElementById("navigation").innerHTML = "";
+  document.getElementById("connection").textContent = "Sign-in required";
+  document.getElementById("main").innerHTML = `<div class="auth-shell"><section class="card auth-card"><div class="eyebrow">AERIS WORKSPACE</div><h1>Welcome back</h1><p>Sign in to review turbine evidence and predictive maintenance cases.</p><form id="login-form"><label class="field"><span>Username</span><input name="username" autocomplete="username" required minlength="3" maxlength="64" autofocus></label><label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required maxlength="128"></label><div id="modal-error" class="auth-error" role="alert">${esc(message)}</div><button type="submit" class="button primary wide-button">Sign in</button></form><p class="help-inline">Need access? Ask your administrator for an individual account.</p><div class="callout">Predictive Maintenance prototype · Synthetic data and simulated forecasts.</div></section></div>`;
+}
+function passwordForm() {
+  return `<form id="password-form"><label class="field"><span>Current password</span><input type="password" name="current_password" autocomplete="current-password" required maxlength="128"></label><label class="field"><span>New password</span><input type="password" name="new_password" autocomplete="new-password" required minlength="15" maxlength="128"><small>Use 15–128 characters. A long, unique passphrase works well.</small></label><label class="field"><span>Confirm new password</span><input type="password" name="confirm_password" autocomplete="new-password" required minlength="15" maxlength="128"></label><div id="modal-error" class="auth-error" role="alert"></div><button class="button primary" type="submit">Change password</button></form>`;
+}
+async function accountWrite(path, fields, method = "POST") {
+  return api(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(fields) });
+}
+async function loadUsers() {
+  const [users, audit] = await Promise.all([api("/api/admin/users"), api("/api/admin/audit")]);
+  S.users = users.users; S.accountEvents = audit.events;
+}
+function usersView() {
+  if (S.user.role !== "admin") return "";
+  return `<div class="section-stack"><section class="card"><div class="card-header"><div><h2>People & access</h2><p class="card-subtitle">${S.users.filter(u => u.active).length} active accounts · Two application roles</p></div>${button(icon("plus") + "Add user", "user-new", "primary")}</div><div class="table-scroll"><table><thead><tr><th>USER</th><th>ROLE</th><th>STATUS</th><th>PASSWORD</th><th>ACTIONS</th></tr></thead><tbody>${S.users.map(u => `<tr><td><strong>${esc(u.display_name)}</strong><div class="muted small">${esc(u.username)}${u.id === S.user.id ? " · You" : ""}</div></td><td>${badge(u.role === "admin" ? "Admin" : "Technician", u.role === "admin" ? "violet" : "green")}</td><td>${badge(u.active ? "Active" : "Inactive", u.active ? "green" : "")}</td><td>${u.must_change_password ? "Change required" : "Ready"}</td><td><div class="action-strip">${button("Edit", "user-edit", "", `data-user-id="${esc(u.id)}"`)}${u.id !== S.user.id ? button("Reset password", "user-password", "", `data-user-id="${esc(u.id)}"`) : ""}</div></td></tr>`).join("")}</tbody></table></div><div class="card-body"><p class="help-inline">Technicians can use the maintenance workspace. Admins can also manage accounts. Changes end that user's current sessions; deactivation preserves their recorded evidence.</p></div></section><section class="card"><div class="card-header"><h2>Account administration history</h2>${badge("Latest 100")}</div><div class="card-body account-audit">${S.accountEvents.map(e => `<div class="definition-row"><div><strong>${esc(e.action)}</strong><p class="small muted">${esc(e.actor_name || "Initial host setup")} → ${esc(e.target_username)}</p></div><time datetime="${esc(e.occurred_at)}">${dt(e.occurred_at)}</time></div>`).join("") || '<p class="muted">No account changes yet.</p>'}</div></section></div>`;
+}
+function userModal(user = null) {
+  const editing = Boolean(user);
+  modal(`<div class="modal-body">${modalHeader(editing ? "Edit user" : "Add user", editing ? "Changes end this user's existing sessions. Accounts are deactivated rather than deleted." : "Create an individual account. Share the temporary password privately; they must change it on first sign-in.")}<form id="${editing ? "user-edit-form" : "user-create-form"}" ${editing ? `data-user-id="${esc(user.id)}" data-version="${user.version}"` : ""}><label class="field"><span>Display name</span><input name="display_name" required minlength="2" maxlength="80" value="${esc(user?.display_name || "")}"></label>${editing ? `<p class="help-inline">Username: ${esc(user.username)}</p>` : '<label class="field"><span>Username</span><input name="username" autocomplete="off" required minlength="3" maxlength="64" pattern="[a-z0-9][a-z0-9._-]{2,63}"><small>Lowercase letters, numbers, dots, hyphens and underscores.</small></label>'}<label class="field"><span>Role</span><select name="role"><option value="technician" ${user?.role !== "admin" ? "selected" : ""}>Technician · Maintenance specialist</option><option value="admin" ${user?.role === "admin" ? "selected" : ""}>Admin · Full workspace and user management</option></select></label>${editing ? `<label class="account-toggle"><input type="checkbox" name="active" ${user.active ? "checked" : ""}>Account active</label>` : '<label class="field"><span>Temporary password</span><input type="password" name="password" autocomplete="new-password" required minlength="15" maxlength="128"><small>15–128 characters. This value is not saved in the browser.</small></label>'}<div id="modal-error" class="auth-error" role="alert"></div><div class="modal-footer">${button("Cancel", "close")}<button type="submit" class="button primary">${editing ? "Save user" : "Create user"}</button></div></form></div>`);
+}
+function resetPasswordModal(user) {
+  modal(`<div class="modal-body">${modalHeader("Reset password", `Set a new temporary password for ${user.display_name}. Their existing sessions will end and they must choose a new password on sign-in.`)}<form id="user-password-form" data-user-id="${esc(user.id)}" data-version="${user.version}"><label class="field"><span>New temporary password</span><input type="password" name="password" autocomplete="new-password" required minlength="15" maxlength="128"></label><div id="modal-error" class="auth-error" role="alert"></div><div class="modal-footer">${button("Cancel", "close")}<button type="submit" class="button primary">Reset password</button></div></form></div>`);
+}

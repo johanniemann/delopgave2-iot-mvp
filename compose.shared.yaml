@@ -3,7 +3,6 @@ services:
   app:
     environment:
       APP_MODE: shared
-      API_TOKEN: ${API_TOKEN:?}
       PUBLIC_ORIGIN: https://${AERIS_HOSTNAME:?}
       ALLOWED_HOSTS: ${AERIS_HOSTNAME:?},localhost,127.0.0.1
     logging: &bounded-logs

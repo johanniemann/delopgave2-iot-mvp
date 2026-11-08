@@ -1,17 +1,16 @@
 """HTTP boundary and local dashboard hosting."""
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-import hmac
 import logging
 import os
+import re
 from pathlib import Path
 from time import monotonic
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, FastAPI, Request, Security
+from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.staticfiles import StaticFiles
 from psycopg import Error as DatabaseError
 from psycopg_pool import PoolTimeout
@@ -23,6 +22,8 @@ from .domain import DomainError
 from .schemas import Command, NewScenario, Outcome, Reading, Review
 from .service import Maintenance
 from .telemetry import HttpTelemetry, Telemetry
+from .accounts import Accounts
+from .auth_routes import build_auth
 
 logger = logging.getLogger(__name__)
 STATIC = Path(__file__).with_name("static")
@@ -32,29 +33,32 @@ STATIC = Path(__file__).with_name("static")
 class Settings:
     database_url: str
     mode: str = "local"
-    api_token: str = ""
     public_origin: str = ""
     allowed_hosts: tuple[str, ...] = ("localhost", "127.0.0.1", "testserver")
     seed_demo: bool = True
     otlp_endpoint: str = ""
+    cookie_namespace: str = "session"
 
     def __post_init__(self):
         if not self.database_url:
             raise ValueError("DATABASE_URL must point to a dedicated PostgreSQL prototype database.")
         if self.mode not in {"local", "shared"}:
             raise ValueError("APP_MODE must be local or shared.")
-        if self.mode == "shared" and (len(self.api_token) < 32 or not self.public_origin.startswith("https://")):
-            raise ValueError("Shared mode requires a 32+ character API_TOKEN and HTTPS PUBLIC_ORIGIN.")
+        if self.mode == "shared" and not self.public_origin.startswith("https://"):
+            raise ValueError("Shared mode requires HTTPS PUBLIC_ORIGIN.")
+        if not re.fullmatch(r"[a-z0-9-]{1,40}", self.cookie_namespace):
+            raise ValueError("Use a short ASCII cookie namespace.")
         if "*" in self.allowed_hosts:
             raise ValueError("Use explicit ALLOWED_HOSTS, not a wildcard.")
 
     @classmethod
     def from_env(cls):
         return cls(database_url=os.environ.get("DATABASE_URL", ""), mode=os.environ.get("APP_MODE", "local"),
-                   api_token=os.environ.get("API_TOKEN", ""), public_origin=os.environ.get("PUBLIC_ORIGIN", ""),
+                   public_origin=os.environ.get("PUBLIC_ORIGIN", ""),
                    allowed_hosts=tuple(h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",") if h.strip()),
                    seed_demo=os.environ.get("SEED_DEMO", "true").lower() == "true",
-                   otlp_endpoint=os.environ.get("AERIS_OTLP_ENDPOINT", ""))
+                   otlp_endpoint=os.environ.get("AERIS_OTLP_ENDPOINT", ""),
+                   cookie_namespace=os.environ.get("AERIS_COOKIE_NAMESPACE", "session"))
 
 
 def error_response(code, message, status, headers=None):
@@ -71,6 +75,7 @@ def create_app(settings: Settings | None = None):
         try:
             initialize(pool)
             app.state.maintenance = Maintenance(pool)
+            app.state.accounts = Accounts(pool)
             if settings.seed_demo:
                 app.state.maintenance.seed()
             if settings.otlp_endpoint:
@@ -85,13 +90,10 @@ def create_app(settings: Settings | None = None):
                   description="Synthetic academic prototype. Forecasts and external maintenance outcomes are simulated.",
                   redoc_url=None)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
-    bearer = HTTPBearer(auto_error=False)
+    auth, management, authorized = build_auth(settings)
+    app.include_router(auth)
+    app.include_router(management)
     write_windows = {}
-
-    def authorized(credentials: HTTPAuthorizationCredentials | None = Security(bearer)):
-        if settings.mode == "shared":
-            if not credentials or not hmac.compare_digest(credentials.credentials.encode(), settings.api_token.encode()):
-                raise HTTPException(401, "Enter a valid shared-demo access token.", headers={"WWW-Authenticate": "Bearer"})
 
     @app.middleware("http")
     async def request_guards(request: Request, call_next):
@@ -193,8 +195,9 @@ def create_app(settings: Settings | None = None):
         return service.forecast(scenario_id, command)
 
     @api.put("/scenarios/{scenario_id}/review")
-    def review(scenario_id: UUID, command: Review, service: Maintenance = Depends(maintenance)):
-        return service.review(scenario_id, command)
+    def review(scenario_id: UUID, command: Review, service: Maintenance = Depends(maintenance), session=Depends(authorized)):
+        command = command.model_copy(update={"reviewer": session["user"]["display_name"]})
+        return service.review(scenario_id, command, actor_id=str(session["user"]["id"]))
 
     @api.post("/scenarios/{scenario_id}/case", status_code=201)
     def create_case(scenario_id: UUID, command: Command, service: Maintenance = Depends(maintenance)):

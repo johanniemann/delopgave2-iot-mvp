@@ -1,44 +1,46 @@
-"""Check the actual running HTTP service, not the in-process test client."""
+"""Check the actual HTTP application, authentication and saved evidence."""
 import json
 import os
-from urllib.error import HTTPError
-import urllib.request
+
+from api_client import ApiClient
 
 
 def main():
     base = os.environ.get("SMOKE_BASE_URL", "http://127.0.0.1:8765").rstrip("/")
-    token = os.environ.get("SMOKE_API_TOKEN", "")
     shared = os.environ.get("SMOKE_EXPECT_SHARED", "false").lower() == "true"
-    if shared and not token:
-        raise SystemExit("A shared smoke check requires SMOKE_API_TOKEN; never put it in the URL.")
+    public_only = os.environ.get("SMOKE_PUBLIC_ONLY", "false").lower() == "true"
+    client = ApiClient(base)
 
     def get(path):
-        headers = {"Authorization": "Bearer " + token} if token and path.startswith("/api/") else {}
-        request = urllib.request.Request(base + path, headers=headers)
-        with urllib.request.urlopen(request, timeout=10) as response:
-            assert response.status == 200
-            return response.read()
+        status, body = client.request(path)
+        assert status == 200, f"{path}: expected 200, received {status}"
+        return body
 
     health = json.loads(get("/health"))
     assert health["database"] == "connected"
     if shared:
         assert health["mode"] == "shared"
-        try:
-            urllib.request.urlopen(base + "/api/overview", timeout=10)
-        except HTTPError as response:
-            assert response.code == 401
-        else:
-            raise AssertionError("Shared data was available without authentication.")
-    overview = json.loads(get("/api/overview"))
-    assert overview["simulation"] is True and overview["turbine_id"] == "WT-017"
-    assert overview["scenarios"]
-    sid = overview["active_scenario_id"]
-    assert json.loads(get("/api/scenarios/" + sid))["readings"]
+    assert client.request("/api/overview")[0] == 401
     assert b"Aeris" in get("/")
     assert b"function render" in get("/static/app.js")
     assert b"--green" in get("/static/styles.css")
-    assert "/api/scenarios/{scenario_id}/review" in json.loads(get("/openapi.json"))["paths"]
-    print("Live HTTP smoke check passed: dashboard, assets, API, PostgreSQL data and OpenAPI.")
+    schema = json.loads(get("/openapi.json"))
+    assert "/api/auth/login" in schema["paths"] and "/api/admin/users" in schema["paths"]
+    if public_only:
+        assert shared
+        print("Shared public shell/readiness and anonymous API rejection passed. Cookie/TLS behavior is tested separately.")
+        return
+    client.login(credentials_file=os.environ.get("SMOKE_CREDENTIALS_FILE"))
+    try:
+        assert client.request("/api/admin/users")[0] == 403  # technician, even via direct HTTP
+        overview = json.loads(get("/api/overview"))
+        assert overview["simulation"] is True and overview["turbine_id"] == "WT-017"
+        assert overview["scenarios"]
+        assert json.loads(get("/api/scenarios/" + overview["active_scenario_id"]))["readings"]
+    finally:
+        client.logout()
+    assert client.request("/api/overview")[0] == 401
+    print("Live HTTP smoke passed: anonymous rejection, Technician login/admin denial, dashboard, PostgreSQL, OpenAPI and logout.")
 
 
 if __name__ == "__main__":

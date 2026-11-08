@@ -31,6 +31,9 @@ silently change an assignment requirement or treat a classroom example as a mand
 - Optional local monitoring and its isolated failure test are described in
   [observability](docs/observability.md); [Postman](docs/postman.md) covers the
   portable API walkthrough. Keep telemetry off in default/shared deployments.
+- Read [account/role guidance](docs/authentication.md) when changing login, user
+  administration or access. Two roles only; no anonymous/shared-token bypass.
+  Preserve existing identity evidence and revoke sessions on account changes.
 - Read [contribution workflow](CONTRIBUTING.md) for branches, review, validation and handoffs.
 - Use [agent setup](docs/agent-setup.md) only for tool loading, research or maintenance.
 - Check the current README and configuration for real commands. The prototype uses
