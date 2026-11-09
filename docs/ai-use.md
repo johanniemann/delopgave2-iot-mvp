@@ -130,6 +130,20 @@ need not create entries.
 - Human assessment: pending group review. Local generated demo accounts and synthetic
   tests are not evidence of other group members' review or real-world identity checks.
 
+## 2026-11-09: GitHub access and local file-copy verification
+
+- Tool: Codex with the connected GitHub plugin.
+- Prompt/purpose: create a small test PR to verify project access and check the
+  previously downloaded local files.
+- Output: this documentation-only log entry on a separate test branch and draft PR.
+- Validation: all 68 local project files matched their Git blob hashes at
+  `ddd2a510770c320ecc5d22110bbbe0ade1772d5a`, the verified `main` commit.
+- Limitation: the local folder is a file copy without `.git` or Git history.
+  This checks file contents and the connector PR workflow; it does not verify
+  local Git authentication, cloning, fetching or pushing.
+- Human assessment: pending; the PR is an access test and has not been approved
+  for merge.
+
 ## Entry template
 
 ```text
