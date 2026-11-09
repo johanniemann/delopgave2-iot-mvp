@@ -58,8 +58,10 @@ docker compose --profile test run --rm --build tests
 python3 scripts/smoke_test.py
 ```
 
-The last command needs the app running. Docker tests use a separate temporary
-PostgreSQL database and never clear demo data. On Windows use `python` or `py -3`.
+Before running the HTTP smoke test, start the app and run `python3 scripts/setup_accounts.py`
+as shown in [Start the dashboard](#start-the-dashboard). If you use a different port,
+set `SMOKE_BASE_URL` to the app's URL. Docker tests use a separate temporary PostgreSQL
+database and never clear demo data. On Windows use `python` or `py -3`.
 GitHub Actions runs guidance checks, actual PostgreSQL tests, image builds and a
 fresh local Docker deployment/HTTP smoke check. No feature branch deploys to Azure.
 
