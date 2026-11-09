@@ -12,9 +12,12 @@ From this repository's root:
 ```sh
 python3 scripts/setup_demo.py
 docker compose up -d --build --wait app
+python3 scripts/setup_accounts.py
 ```
 
-Open `http://localhost:8765`. The setup script creates an ignored `.env` with fresh
+Open `http://localhost:8765` and sign in with an individual local account. Random
+local Admin/Technician credentials are saved in ignored `.env.accounts-8765.json`;
+see [account setup, permissions and recovery](authentication.md). The environment setup script creates an ignored `.env` with fresh
 local credentials and never overwrites an existing file. Do not copy credentials
 between members or commit `.env`. To use another port, change APP_PORT in `.env`.
 The browser, JSON API and API reference are served by the same application. Swagger
@@ -56,7 +59,7 @@ The [local observability guide](observability.md) starts an isolated copy on por
 8766 plus SigNoz on port 3301. It has separate data from the normal port-8765 demo
 and stays off in the default/shared configuration. Use its helper to stop it when
 finished. The [Postman guide](postman.md) demonstrates the complete case flow with
-13 requests and 23 assertions. Neither workflow starts or deploys to Azure.
+17 requests and 28 assertions. Neither workflow starts or deploys to Azure.
 
 ## Validation
 
@@ -85,12 +88,13 @@ production secrets. Repository checks remain a separate lightweight job.
 
 ## Code map and dependencies
 
+- `app/accounts.py` / `app/auth_routes.py`: hashed passwords, sessions, CSRF and two roles.
 - `app/main.py`: HTTP routes, input/access guards, safe errors, lifecycle and assets.
 - `app/schemas.py`: bounded request contracts; OpenAPI is the canonical route schema.
 - `app/domain.py`: the explicit rule, case gate and resolution rule.
 - `app/service.py`: transactions, state transitions, receipts, events and demo seeds.
 - `app/telemetry.py`: opt-in bounded HTTP timing/count/span collection, no input export.
-- `app/db.py` / `app/schema.sql`: PostgreSQL pool and initial schema version 1.
+- `app/db.py` / `app/schema.sql`: PostgreSQL pool, initial schema v1 and forward migrations in `app/migrations/`.
 - `app/static/`: English dashboard, accessible forms, charts and responsive layout.
 - `tests/`: domain and actual PostgreSQL API/integration tests.
 - `compose.yaml` / `Dockerfile`: repeatable local deployment and isolated test target.
@@ -116,13 +120,11 @@ deployment uses its own PostgreSQL container/volume after inspecting the existin
 VM; no legacy database was reused. Never open the DB port publicly. Keep the local
 Compose option for every group member and use the deployment guide for releases.
 
-For shared access, use HTTPS through a suitable proxy/tunnel, explicit ALLOWED_HOSTS,
-PUBLIC_ORIGIN and APP_MODE=shared. Shared mode refuses startup without a 32+ character
-API_TOKEN and an HTTPS public origin; every `/api` request needs the bearer token.
-The browser asks for it and uses tab session storage, never a URL or committed file.
-This is shared prototype access, not individual production accounts or an audit-grade
-identity system. Do not expose the default unauthenticated local mode publicly.
-See [the API contract](api.md) for mutation limits, idempotency and safe failures.
+Shared mode uses HTTPS through Caddy, explicit ALLOWED_HOSTS/PUBLIC_ORIGIN and
+Secure HttpOnly individual session cookies. The new code always requires login,
+including local mode; the old API_TOKEN cannot bypass roles. The existing Azure
+release is unchanged until an authorized promotion. See [authentication](authentication.md)
+for bootstrap and migration before release. Avoid exposing local HTTP mode publicly.
 The developer's Mac has called the VM's real API over authenticated HTTPS and used
 the public dashboard. Other teammates should still try it from their own computers;
 an in-process test alone is not evidence of that access.

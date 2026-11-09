@@ -92,3 +92,22 @@ def test_disabled_instrumentation_leaves_requests_working(observed_app):
 def test_endpoint_refuses_credentials_paths_and_non_http_schemes(endpoint):
     with pytest.raises(ValueError, match="AERIS_OTLP_ENDPOINT"):
         Telemetry.connect(endpoint)
+
+
+def test_real_login_never_exports_password_cookie_or_csrf(client, observed_app):
+    _, sample, spans, reader = observed_app
+    client.app.state.telemetry = sample.state.telemetry
+    try:
+        caller = TestClient(client.app)
+        response = caller.post("/api/auth/login?private=do-not-export", json={
+            "username": "technician", "password": client.test_password})
+        assert response.status_code == 200
+        session = response.json()
+        caller.post("/api/auth/logout", json={}, headers={"X-CSRF-Token": session["csrf_token"]})
+        cookie = response.cookies.get("aeris-local-session")
+        finished = spans.get_finished_spans()
+        assert any(s.attributes.get("http.route") == "/api/auth/login" for s in finished)
+        evidence = str(reader.get_metrics_data()) + str([(s.name, dict(s.attributes), s.events) for s in finished])
+        assert all(secret not in evidence for secret in (client.test_password, session["csrf_token"], cookie, "do-not-export"))
+    finally:
+        client.app.state.telemetry = None

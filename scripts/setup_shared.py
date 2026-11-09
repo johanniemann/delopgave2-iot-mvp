@@ -29,7 +29,6 @@ def main():
     args = parser.parse_args()
     content = (f"AERIS_HOSTNAME={args.hostname}\n"
                f"POSTGRES_PASSWORD={secrets.token_urlsafe(32)}\n"
-               f"API_TOKEN={secrets.token_urlsafe(32)}\n"
                "APP_MODE=shared\nAPP_PORT=8765\n")
     try:
         descriptor = os.open(args.env_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)

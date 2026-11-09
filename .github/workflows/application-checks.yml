@@ -26,12 +26,12 @@ jobs:
         run: docker compose --profile test run --rm --build tests
       - name: Build and deploy the local Docker prototype
         run: docker compose up -d --build --wait app
+      - name: Create private local validation accounts
+        run: python3 scripts/setup_accounts.py
       - name: Smoke test running API and dashboard
         run: python3 scripts/smoke_test.py
-      - name: Run the Postman business workflow against the isolated API
-        run: >-
-          npx --yes newman@6.2.3 run postman/Aeris.postman_collection.json
-          --env-var base_url=http://127.0.0.1:8765
+      - name: Run the authenticated Postman business workflow
+        run: python3 scripts/run_postman.py
       - name: Validate HTTPS proxy configuration
         env:
           AERIS_HOSTNAME: demo.example.com
@@ -44,14 +44,7 @@ jobs:
           AERIS_HOSTNAME: demo.example.com
         run: |
           docker compose -f compose.yaml -f compose.shared.yaml up -d --wait app
-          python3 - <<'PY'
-          import os
-          from pathlib import Path
-          import subprocess
-          values = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if '=' in line)
-          environment = dict(os.environ, SMOKE_API_TOKEN=values['API_TOKEN'], SMOKE_EXPECT_SHARED='true')
-          subprocess.run(['python3', 'scripts/smoke_test.py'], env=environment, check=True)
-          PY
+          SMOKE_EXPECT_SHARED=true SMOKE_PUBLIC_ONLY=true python3 scripts/smoke_test.py
       - name: Show service status on failure
         if: failure()
         run: docker compose ps -a

@@ -7,6 +7,7 @@ from pathlib import Path
 import platform
 import secrets
 import ssl
+import sys
 import subprocess
 import tarfile
 import time
@@ -25,13 +26,14 @@ FOUNDRY_HASHES = {
 }
 STACK = RUNTIME / "pours" / "deployment" / "compose.yaml"
 BASE = "http://127.0.0.1:8766"
+_client = None
 
 
 def run(command, **kwargs):
     return subprocess.run(command, cwd=ROOT, check=True, **kwargs)
 
 
-def compose(project, *arguments, capture=False):
+def compose(project, *arguments, capture=False, **kwargs):
     if project == "monitoring":
         command = ["docker", "compose", "-p", "aeris-monitoring", "-f", str(STACK)]
     else:
@@ -43,7 +45,7 @@ def compose(project, *arguments, capture=False):
                 "DATABASE_URL", "AERIS_OTLP_ENDPOINT", "PUBLIC_ORIGIN", "ALLOWED_HOSTS"):
         environment.pop(key, None)
     environment.update(APP_PORT="8766", APP_MODE="local")
-    return run(command + list(arguments), env=environment, capture_output=capture, text=True)
+    return run(command + list(arguments), env=environment, capture_output=capture, text=True, **kwargs)
 
 
 def prepare():
@@ -87,11 +89,12 @@ def prepare():
 
 
 def get(path):
-    try:
-        with urlopen(BASE + path, timeout=15) as response:
-            return response.status, response.read()
-    except HTTPError as response:
-        return response.code, response.read()
+    global _client
+    if _client is None:
+        from api_client import ApiClient
+        _client = ApiClient(BASE)
+        _client.login()
+    return _client.request(path)
 
 
 def traffic():
@@ -155,6 +158,7 @@ def main():
         compose("monitoring", "up", "-d", "--wait", "--wait-timeout", "240",
                 "ingester", "signoz-signoz-0")
         compose("app", "up", "-d", "--build", "--wait", "app")
+        run([sys.executable, "scripts/setup_accounts.py", "--observed"])
         print("Aeris: http://localhost:8766 | SigNoz: http://localhost:3301")
     elif action == "stop":
         if ENV.exists():

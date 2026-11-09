@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Aeris Predictive Maintenance walkthrough",
-    "description": "A complete synthetic local workflow with assertions, including blocked case creation, human forecast review, failed and successful simulated outcomes, and persisted evidence. Start the isolated demo with python3 scripts/observability.py up. Default endpoint is loopback port 8766. No passwords/tokens are included. To use the shared Azure VM, start it deliberately, change base_url to its HTTPS origin and set collection Bearer auth to a Postman Local Vault reference; never save the actual token in the collection. Run in order. Each run preserves previous scenarios and creates a new one. Health probes are excluded from telemetry. See docs/postman.md.",
+    "description": "Authenticated synthetic Predictive Maintenance walkthrough. Sign in as Technician, retain the cookie jar, use the session CSRF token, demonstrate the complete saved case flow, verify admin denial and sign out. Credentials are runtime-only values or Postman Local Vault references. See docs/postman.md. Existing data is preserved.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -11,6 +11,14 @@
     {
       "key": "base_url",
       "value": "http://127.0.0.1:8766"
+    },
+    {
+      "key": "login_username",
+      "value": ""
+    },
+    {
+      "key": "login_password",
+      "value": ""
     }
   ],
   "event": [
@@ -20,12 +28,52 @@
         "type": "text/javascript",
         "exec": [
           "pm.variables.set(\"request_id\", pm.variables.replaceIn(\"{{$guid}}\"));",
-          "pm.variables.set(\"demo_reference\", \"DEMO-POSTMAN-\" + pm.variables.get(\"request_id\"));"
+          "pm.variables.set(\"demo_reference\", \"DEMO-POSTMAN-\" + pm.variables.get(\"request_id\"));",
+          "if (pm.variables.get(\"csrf_token\")) pm.request.headers.upsert({key: \"X-CSRF-Token\", value: pm.variables.get(\"csrf_token\")});"
         ]
       }
     }
   ],
   "item": [
+    {
+      "name": "00 Sign in as Technician",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{login_username}}\",\n  \"password\": \"{{login_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "{",
+              "pm.test(\"Individual login succeeds\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+              "const session = pm.response.json();",
+              "pm.test(\"Technician account with personal password\", () => { pm.expect(session.user.role).to.eql(\"technician\"); pm.expect(session.user.must_change_password).to.eql(false); });",
+              "pm.variables.set(\"csrf_token\", session.csrf_token);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
     {
       "name": "01 Check API and PostgreSQL",
       "request": {
@@ -444,6 +492,72 @@
               "const data = pm.response.json();",
               "pm.test(\"Complete evidence unchanged\", () => pm.expect(data).to.deep.eql(JSON.parse(pm.collectionVariables.get(\"saved_case\"))));",
               "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 Technician cannot list accounts",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/admin/users"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"14 Technician cannot list accounts\", () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 Sign out",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/auth/logout",
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"15 Sign out\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 Signed-out workspace is denied",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/overview"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"16 Signed-out workspace is denied\", () => pm.response.to.have.status(401));"
             ]
           }
         }

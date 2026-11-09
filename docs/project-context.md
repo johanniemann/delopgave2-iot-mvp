@@ -9,7 +9,8 @@ PostgreSQL persistence, deterministic simulated forecasts, saved risk reviews,
 case gates, simulated outcomes and an event timeline. Local Docker remains the
 development option. A shared HTTPS deployment now runs on the existing Azure VM
 with a dedicated PostgreSQL container and persistent volume, not a reused legacy
-database. External API access and the saved midnight shutdown schedule are verified;
+database. That earlier token-protected release remains installed; this branch's
+individual-account release has only been applied locally. External API access and the saved midnight shutdown schedule are verified;
 see [deployment evidence and limits](deployment.md).
 
 ## Implemented structure
@@ -17,7 +18,8 @@ see [deployment evidence and limits](deployment.md).
 - `app/main.py` / `app/schemas.py`: API, validation, safe errors and access boundary.
 - `app/domain.py`: synthetic rule (>28.0 m/s), case gate and resolution rule.
 - `app/service.py`: transactional operations, version checks, replay receipts, seeds.
-- `app/db.py` / `app/schema.sql`: pooled PostgreSQL access and initial schema v1.
+- `app/accounts.py` / `app/auth_routes.py`: individual accounts, sessions, CSRF, Admin/Technician roles.
+- `app/db.py` / `app/schema.sql` / `app/migrations/`: PostgreSQL and recorded forward migrations (v2 accounts).
 - `app/static/`: same-origin HTML/CSS/JavaScript dashboard; no frontend build service.
 - `app/telemetry.py`: optional app-scoped HTTP metrics/traces; off by default.
 - `compose.observability.yaml` / `ops/observability/`: isolated local SigNoz demo.
@@ -105,6 +107,7 @@ without a task that needs it. No Salesforce/Business Central integration is sele
 | Forecast and notification | Fixed illustrative risks; saved human review; visible dashboard fault/review queue | No real inference, email/SMS or paid service |
 | Deployment | Local Compose plus shared Azure Compose/Caddy HTTPS deployment; private DB, loopback app, shared bearer guard; Mac-to-VM API verified; midnight Copenhagen shutdown saved; actual VM deallocation/startup and saved evidence verified on 2026-11-07 | Other members still need to try shared access; actual scheduled stop has not been observed; release promotion is manual |
 | Local observability | Opt-in OpenTelemetry SDK and self-hosted SigNoz on each developer's computer, separate Compose projects/data; bounded HTTP fields only; no SQL/body/token export | Team learning choice selected 2026-11-08; not deployed on the small Azure VM; see [monitoring guide](observability.md) |
+| Application roles | Individual Technician/Maintenance specialist and Admin; server-side cookies, password change/reset, user administration and audit; local forward migration preserved complete saved evidence | Team requirement selected 2026-11-08; see [account guide](authentication.md). Azure promotion and teammate access remain separate validation |
 | Branch enforcement | Feature branches + independent PR review are team conventions | Hosting enforcement still not configured/verified by this implementation |
 
 On 2026-11-07 the owner explicitly authorized merging PR #4 after its five checks

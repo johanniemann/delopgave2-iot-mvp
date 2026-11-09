@@ -17,3 +17,8 @@ def initialize(pool: ConnectionPool) -> None:
     with pool.connection() as conn:
         conn.execute("SELECT pg_advisory_xact_lock(814017)")
         conn.execute(Path(__file__).with_name("schema.sql").read_text())
+
+        for migration in sorted(Path(__file__).with_name("migrations").glob("*.sql")):
+            version = int(migration.name.split("_", 1)[0])
+            if not conn.execute("SELECT 1 FROM aeris.schema_versions WHERE version=%s", (version,)).fetchone():
+                conn.execute(migration.read_text())

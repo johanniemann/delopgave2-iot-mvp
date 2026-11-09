@@ -7,6 +7,13 @@ that might already be installed on the VM. Inspect the host before first deploym
 
 ## Deployment state
 
+**2026-11-08 account release:** this branch replaces the shared token with individual
+Admin/Technician sessions. It is verified locally and has not been promoted to Azure.
+The installed VM release described below still uses the earlier token arrangement.
+Read [account bootstrap, forward migration and recovery](authentication.md) before
+promoting; do not apply the new release without preparing the first administrator.
+
+
 The accepted prototype is running on the existing VM. The approved Azure firewall
 permits TCP 80/443 and restricts Johan's
 SSH rule to his current public IPv4 /32. The VM's nightly shutdown is enabled at
@@ -120,7 +127,7 @@ docker compose --project-name aeris-shared --env-file ../../.env.shared -f compo
 ```
 
 The deployment script does not provision Azure, change firewall rules, delete
-volumes, run schema migrations or start the VM. On a failed release, inspect status
+volumes or start the VM. The new app applies recorded forward migrations on startup. On a failed release, inspect status
 and return to the previous compatible source release with the same settings/project.
 Never use `down --volumes`, `docker system prune --volumes` or a database reset on
 the shared demo. Before a schema change, make a private `pg_dump` backup and design
@@ -128,25 +135,25 @@ a forward migration; restoring old source cannot undo a database migration.
 
 ## Verify and hand over
 
-1. From a computer outside the VM, open the configured **HTTPS** URL. The certificate
-   must be trusted without bypassing browser warnings. The dashboard initially asks
-   for the access token; unauthenticated `/api/overview` must return HTTP 401.
-2. Share only the API_TOKEN privately with the group; it is shared prototype access,
-   not individual accounts. Never send the database password, private key or entire
-   settings file. Do not put the token in a URL, issue or screenshot. The dashboard
-   stores it only for the current browser tab session. Rotate deliberately if exposed.
-3. With the token supplied as SMOKE_API_TOKEN in a private process environment:
+1. From outside the VM, open the configured HTTPS URL with a normally trusted
+   certificate. The new release shows individual sign-in; anonymous `/api/overview`
+   must return HTTP 401. No browser-warning bypass is acceptable.
+2. Bootstrap the initial Admin through the privileged host-side procedure in the
+   [account guide](authentication.md). The Admin chooses a personal password and
+   creates individual Technician accounts. Never share database/SSH credentials.
+   The old API_TOKEN setting is ignored by the new release and must not be used.
+3. To check a deliberately running shared release, use a private, mode-0600 JSON
+   file bound to the exact HTTPS hostname with a Technician account, as described
+   in `scripts/api_client.py` and the account guide. Then run:
 
    ```sh
-   SMOKE_BASE_URL=https://YOUR-CONFIGURED-DNS-NAME SMOKE_EXPECT_SHARED=true python3 scripts/smoke_test.py
+   SMOKE_BASE_URL=https://YOUR-CONFIGURED-DNS-NAME SMOKE_EXPECT_SHARED=true SMOKE_CREDENTIALS_FILE=/private/path/to/accounts.json python3 scripts/smoke_test.py
    ```
 
-   This read-only check verifies real HTTP assets, authenticated data, PostgreSQL
-   readiness and rejection without a token. It uses normal TLS verification. Never
-   publish the token as a command argument or disable certificate verification.
-   If a standalone macOS Python reports a missing local issuer while the browser
-   and system curl trust the certificate, point that process at the existing system
-   CA bundle with `SSL_CERT_FILE=/etc/ssl/cert.pem`; keep verification enabled.
+   Passwords never belong in command arguments, URLs, issues or screenshots. TLS
+   verification stays enabled. On macOS, if needed use the system CA bundle through
+   `SSL_CERT_FILE=/etc/ssl/cert.pem`. This checks actual HTTPS/cookie login, data,
+   Technician admin denial and logout; an in-process test is not external evidence.
 4. Review a synthetic scenario, create a case, record a clearly simulated outcome
    and reload. Restart containers and verify the same records remain. Have another
    group member call the API from their own computer and record that evidence.

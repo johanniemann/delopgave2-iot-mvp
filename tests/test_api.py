@@ -193,6 +193,7 @@ def test_persistence_survives_a_new_application_instance(client):
     make_case(client,sid)
     app = create_app(Settings(database_url=os.environ["DATABASE_URL"],seed_demo=False))
     with TestClient(app) as other:
+        other.cookies.update(client.cookies)
         saved = detail(other,sid)
         assert saved["case"]["status"] == "Open" and saved["forecast"]["review_status"] == "Reviewed"
         assert len(saved["readings"]) == 96
@@ -253,16 +254,19 @@ def test_write_rate_limit_returns_retry_after(client):
     assert result.status_code == 429 and result.headers["Retry-After"] == "60"
 
 
-def test_shared_mode_requires_token_and_https_origin(client):
+def test_shared_mode_requires_individual_login_and_https_origin(client):
     with pytest.raises(ValueError):
         Settings(database_url=os.environ["DATABASE_URL"],mode="shared")
-    token = "test-token-" + "x"*40
-    settings = Settings(database_url=os.environ["DATABASE_URL"],mode="shared",api_token=token,
-                        public_origin="https://demo.example",seed_demo=False)
-    with TestClient(create_app(settings)) as shared:
+    settings = Settings(database_url=os.environ["DATABASE_URL"],mode="shared",
+                        public_origin="https://demo.example",allowed_hosts=("demo.example",),seed_demo=False)
+    with TestClient(create_app(settings),base_url="https://demo.example") as shared:
         assert shared.get("/api/overview").status_code == 401
-        assert shared.get("/api/overview",headers={"Authorization":"Bearer wrong"}).status_code == 401
-        assert shared.get("/api/overview",headers={"Authorization":"Bearer "+token}).status_code == 200
+        assert shared.get("/api/overview",headers={"Authorization":"Bearer " + "x"*40}).status_code == 401
+        login = shared.post("/api/auth/login",json={"username":"technician","password":client.test_password})
+        assert login.status_code == 200
+        cookie = login.headers["set-cookie"]
+        assert "__Host-aeris-session=" in cookie and "Secure" in cookie and "HttpOnly" in cookie and "SameSite=strict" in cookie
+        assert shared.get("/api/overview").status_code == 200
         assert shared.get("/health").status_code == 200
 
 

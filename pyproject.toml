@@ -9,6 +9,7 @@ dependencies = [
     "psycopg[binary,pool]>=3.2,<4",
     "opentelemetry-sdk>=1.38,<2",
     "opentelemetry-exporter-otlp-proto-http>=1.38,<2",
+    "argon2-cffi>=25.1,<26",
 ]
 
 [dependency-groups]

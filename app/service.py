@@ -150,18 +150,18 @@ class Maintenance:
     def forecast(self, scenario_id, command):
         return self._perform(scenario_id, "forecast", command, self._forecast)
 
-    def review(self, scenario_id, command):
+    def review(self, scenario_id, command, actor_id=None):
         def action(conn, scenario):
             if conn.execute("SELECT 1 FROM aeris.cases WHERE scenario_id=%s", (scenario_id,)).fetchone():
                 raise DomainError("CASE_ALREADY_CREATED", "The case preserves this review. Start another analysis window for new decisions.")
             forecast = conn.execute("SELECT * FROM aeris.forecasts WHERE scenario_id=%s", (scenario_id,)).fetchone()
             if not forecast:
                 raise DomainError("FORECAST_REQUIRED", "Generate a simulated forecast before reviewing it.")
-            review = {"reviewer": command.reviewer, "note": command.note,
+            review = {"reviewer": command.reviewer, "reviewer_id": actor_id, "note": command.note,
                       "decisions": [d.model_dump() for d in command.decisions],
                       "reviewed_at": self.clock().isoformat()}
             conn.execute("UPDATE aeris.forecasts SET review_status='Reviewed',review=%s WHERE id=%s", (Jsonb(review), forecast["id"]))
-            self._event(conn, scenario_id, "Failure Forecast Reviewed", {"forecast_id": forecast["id"], "reviewer": command.reviewer,
+            self._event(conn, scenario_id, "Failure Forecast Reviewed", {"forecast_id": forecast["id"], "reviewer": command.reviewer, "reviewer_id": actor_id,
                                                                          "accepted": sum(d.decision == "Accepted" for d in command.decisions)})
             return {"forecast_id": forecast["id"], "review_status": "Reviewed"}
         return self._perform(scenario_id, "review", command, action)
