@@ -24,6 +24,7 @@ from .service import Maintenance
 from .telemetry import HttpTelemetry, Telemetry
 from .accounts import Accounts
 from .auth_routes import build_auth
+from .security_log import record_rejection
 
 logger = logging.getLogger(__name__)
 STATIC = Path(__file__).with_name("static")
@@ -131,6 +132,13 @@ def create_app(settings: Settings | None = None):
         response.headers["Content-Security-Policy"] = policy
         return response
 
+    @app.middleware("http")
+    async def security_events(request: Request, call_next):
+        # Outside the write guard, so early CSRF/origin/rate rejections count too.
+        response = await call_next(request)
+        record_rejection(request, response.status_code)
+        return response
+
     @app.exception_handler(DomainError)
     async def domain_error(request, exc):
         return error_response(exc.code, exc.message, exc.status)
@@ -162,7 +170,8 @@ def create_app(settings: Settings | None = None):
     def health(service: Maintenance = Depends(maintenance)):
         with service.pool.connection() as conn:
             conn.execute("SELECT 1")
-        return {"status": "ok", "database": "connected", "mode": settings.mode, "simulation": True}
+        return {"status": "ok", "database": "connected", "mode": settings.mode,
+                "simulation": True, "revision": os.environ.get("APP_REVISION", "local")}
 
     api = APIRouter(prefix="/api", dependencies=[Depends(authorized)], tags=["Predictive Maintenance"])
 

@@ -69,8 +69,8 @@ clear architecture, understandable demonstration, documentation and reflection.
 | B1 | `04. Bøger til ekstra/Cloud Native Architecture and Design A Handbook for Modern Day Architecture and Design witb Enterprise Grade Examples.pdf` | Supplementary book: PDF p. 443 branching/traceability/quality gates; pp. 490-492 CI/delivery/deployment. Supports rationale, not an assignment mandate |
 
 Other teaching files and the teaching-description DOCX were searched for relevant
-workflow guidance. No explicit GitFlow or required PR-approval count was found in
-searchable text. Some image-only pages cannot support an exhaustive absence claim.
+workflow guidance. That earlier search did not establish a required strategy. The newer C8/C9
+materials below and the team decision now supply the workflow context. Some image-only pages cannot support an exhaustive absence claim.
 
 ## Later team clarification and supplementary notes
 
@@ -98,3 +98,24 @@ submission's method section/appendix; a PR or this log is not itself the final a
 Original-source research alone, unused brainstorming, and proofreading/formatting of
 independently written text have the exemptions listed in C3. Never claim human review
 has happened before a contributor has actually performed it.
+
+
+## 2026-11-17 CI/CD and branching update
+
+- C8: `01. Slides fra undervisningen/14_2_Automatisering_med_CI_CD.pdf`, especially
+  pp. 4, 8, 10 and 15: real tests, Postman/SQL verification and delivery of a built
+  container image to a remote machine; the baseline is explicitly only a teaching
+  example and its placeholders/insecure defaults must not be copied as a product.
+- C9: `01. Slides fra undervisningen/14_3_Branching_strategier_secrets_miljøer_og_IaC .pdf`,
+  pp. 19-34 and 42-45: secrets, shift-left checks, isolated environments, approval
+  gates, ports and persistent volumes. Multiple branching strategies are examples.
+- T3: the user explicitly selected `feature/*` from `dev`, reviewed integration to
+  `dev`, and release promotion to stable `main`, also for the exam. This supersedes
+  the repo's earlier GitHub Flow convention; it is not a claim that every course
+  project must use GitFlow.
+- The user subsequently authorized closing the technical audit gaps, including
+  release delivery, safer logging, backup/restore and the Azure account upgrade.
+  Human review and actual teammate usage remain evidence that only people can supply.
+
+E1-E3 are in the supplied bundle's `06. Øvelser` folder after its reorganization;
+older register paths reflect the earlier bundle layout. Source PDFs remain outside Git.

@@ -1,0 +1,4 @@
+# Use after loading the verified image archive, together with both shared files.
+services:
+  app:
+    image: ${AERIS_RELEASE_IMAGE:?Select the verified immutable release image}

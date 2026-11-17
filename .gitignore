@@ -26,3 +26,5 @@ CLAUDE.local.md
 *.db
 *.sqlite
 *.sqlite3
+*.dump
+*.backup
