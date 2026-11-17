@@ -37,9 +37,11 @@ The initial database contains clearly labelled Seeded demo history: one pending
 forecast and two sample cases. This is illustrative history, not real human review.
 Run the dashboard/database locally for development, or open the protected
 [shared Azure dashboard](https://aeris-studiegruppe-linux.swedencentral.cloudapp.azure.com/)
-when the VM is deliberately started. Its earlier installed release still uses the
-shared token until the individual-account release is promoted. The VM shuts down at **00:00 Copenhagen time** and
-must be started manually for the next session. See [deployment and verification](docs/deployment.md).
+when the VM is deliberately started. It uses individual Admin/Technician accounts and requires a personal password
+change on first login. The old shared token is no longer accepted. Azure has a saved
+shutdown schedule for **00:00 Copenhagen time**; the scheduled job itself has not
+been observed firing. Start the VM deliberately for each session and verify
+deallocation afterwards. See [deployment and verification](docs/deployment.md).
 
 ```sh
 docker compose stop app db
@@ -64,6 +66,9 @@ set `SMOKE_BASE_URL` to the app's URL. Docker tests use a separate temporary Pos
 database and never clear demo data. On Windows use `python` or `py -3`.
 GitHub Actions runs guidance checks, actual PostgreSQL tests, image builds and a
 fresh local Docker deployment/HTTP smoke check. No feature branch deploys to Azure.
+The helper suite also runs dashboard JavaScript regressions and needs **Node.js
+18+** on the host. Node is not needed to run the dashboard through Docker. The
+optional Newman API runner has its own Node/npm prerequisite.
 
 ## Release and verification
 
@@ -77,15 +82,17 @@ push/manual runs retain a private tested-image/source artifact; trusted dev/main
 pushes also publish that same image to GHCR. Azure promotion remains explicit and
 requires verified backup evidence. See [release and recovery](docs/release.md).
 
-Use the [five-minute demo plan](docs/demo.md) to demonstrate external sensor input,
+See [verified release evidence](docs/verification-2026-11-17.md) for actual tests,
+backup/recovery and remaining human acceptance. Use the [five-minute demo plan](docs/demo.md) to demonstrate external sensor input,
 SQL persistence and the domain flow. `/health` identifies an image's source revision.
 
 ## Shared project guidance
 
-- [Projektet forklaret på dansk uden tekniske forkundskaber](docs/project-walkthrough-da.md)
+- [Historisk dansk forklaring af arbejdet 6.–7. november](docs/project-walkthrough-da.md)
 - [Run, demonstrate, test and maintain the prototype](docs/development.md)
 - [Optional local SigNoz monitoring and safe failure test](docs/observability.md)
 - [Individual logins, roles and user administration](docs/authentication.md)
+- [Account, evidence and backup data handling](docs/data-handling.md)
 - [Postman API walkthrough](docs/postman.md)
 - [Shared Azure deployment and verification state](docs/deployment.md)
 - [API contract, demo rule and state transitions](docs/api.md) · live OpenAPI at `/docs`
@@ -95,5 +102,3 @@ SQL persistence and the domain flow. `/health` identifies an image's source revi
 - [Branch, PR and review workflow](CONTRIBUTING.md)
 - [Using Codex, Claude Code, Cursor or Copilot](docs/agent-setup.md)
 - [Canonical agent instructions](AGENTS.md) · [AI-use record](docs/ai-use.md)
-
-Jeg elsker mad ing

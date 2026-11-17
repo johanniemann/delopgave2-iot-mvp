@@ -9,9 +9,17 @@ PostgreSQL persistence, deterministic simulated forecasts, saved risk reviews,
 case gates, simulated outcomes and an event timeline. Local Docker remains the
 development option. A shared HTTPS deployment now runs on the existing Azure VM
 with a dedicated PostgreSQL container and persistent volume, not a reused legacy
-database. That earlier token-protected release remains installed; this branch's
-individual-account release has only been applied locally. External API access and the saved midnight shutdown schedule are verified;
-see [deployment evidence and limits](deployment.md).
+database. The individual-account release was promoted and externally verified on
+2026-11-17 at `0f1e9d82a2ee36f687292b3781dd7778b6283364`; the earlier shared token
+cannot authenticate. The midnight shutdown schedule is saved, but its actual
+scheduled execution has not been observed. See [deployment evidence and limits](deployment.md).
+
+This checkout also contains a subsequent quality-improvement candidate: trusted
+proxy client identity for quotas, preservation of selected older evidence windows,
+escaped dialog text, a discoverable CSRF contract and stronger backup guards.
+These changes do not establish a new deployed release. Record their CI/runtime
+results and any separately authorized promotion before changing the installed
+revision above. Independent human review is still required by the team workflow.
 
 ## Implemented structure
 
@@ -75,25 +83,25 @@ maintenance outcome so the demo can record an outcome and resolve the original c
 Better Maintenance, its work orders, task assignment and operational verification
 are excluded. The simulator is a boundary input, not a second maintenance system.
 
-See the [prototype plan](prototype-plan.md) for the planned walkthrough, acceptance
+See the [original prototype plan](prototype-plan.md) for the planned walkthrough, acceptance
 examples, proposed simple architecture and implementation sequence. These team
 choices add a dashboard to the academic minimum; they are not new course mandates.
 
 ## Relationship to Delopgave 1
 
-The final student report proposes Predictive Maintenance and Better Maintenance as
+The earlier project model proposes Predictive Maintenance and Better Maintenance as
 two logical contexts, initially deployed together with separate model responsibilities.
 That describes the broader original design; the selected prototype implements only
-the first context. Do not interpret the report as permission to add the second.
+the first context. Do not interpret that broader model as permission to add the second.
 It links wind-turbine measurements to cases, work orders and verified normal operation.
 Earlier MD notes and API examples are proposals, not implemented contracts.
 
-The report's NT-01 rule prevents work-order closure unless all required tasks are
+The broader model's NT-01 rule prevents work-order closure unless all required tasks are
 complete and the latest verification confirms normal operation for their current
 revision; changed work invalidates old verification. NH-01 proposes specialist
 suggestions, with human assignment. Preserve these meanings if that broader scope
 is later selected. Neither belongs in this prototype's implementation.
-The report also proposes durable handoffs/outbox and replay handling for a later
+The earlier model also proposes durable handoffs/outbox and replay handling for a later
 cross-context integration. Do not introduce that infrastructure for simple telemetry
 without a task that needs it. No Salesforce/Business Central integration is selected.
 
@@ -102,20 +110,21 @@ without a task that needs it. No Salesforce/Business Central integration is sele
 | Decision | Current evidence | When to resolve |
 | --- | --- | --- |
 | Language, framework and versions | Python 3.13/FastAPI, same-application HTML/CSS/JavaScript; exact dependencies in uv.lock and official base images pinned by digest | Review/test explicit upgrades; no extra frontend service |
-| Database | PostgreSQL 16, separate Compose service and persistent named volume; objects isolated in aeris schema | Future schema changes need forward migrations; verify VM compatibility before reuse |
+| Database | PostgreSQL 16, separate Compose service and persistent named volume; objects isolated in aeris schema; shared VM installation verified | Future schema changes need forward migrations and preservation checks |
 | Threshold, units and equality boundary | Synthetic wind_speed in m/s; strictly >28.0 opens fault, equality does not; invalid/null readings retained and excluded | A demo configuration, not an equipment safety limit |
 | Forecast and notification | Fixed illustrative risks; saved human review; visible dashboard fault/review queue | No real inference, email/SMS or paid service |
-| Deployment | Local Compose plus shared Azure Compose/Caddy HTTPS deployment; private DB, loopback app, shared bearer guard; Mac-to-VM API verified; midnight Copenhagen shutdown saved; actual VM deallocation/startup and saved evidence verified on 2026-11-07 | Other members still need to try shared access; actual scheduled stop has not been observed; release promotion is manual |
+| Deployment | Local Compose plus shared Azure Compose/Caddy HTTPS deployment; private DB, loopback app, individual Secure-cookie accounts; actual HTTPS Postman and app/database restart verified on 2026-11-17; midnight Copenhagen shutdown saved | Other members still need to try shared access; actual scheduled stop has not been observed; release promotion is manual |
 | Local observability | Opt-in OpenTelemetry SDK and self-hosted SigNoz on each developer's computer, separate Compose projects/data; bounded HTTP fields only; no SQL/body/token export | Team learning choice selected 2026-11-08; not deployed on the small Azure VM; see [monitoring guide](observability.md) |
-| Application roles | Individual Technician/Maintenance specialist and Admin; server-side cookies, password change/reset, user administration and audit; local forward migration preserved complete saved evidence | Team requirement selected 2026-11-08; see [account guide](authentication.md). Azure promotion and teammate access remain separate validation |
-| Branch enforcement | Feature branches + independent PR review are team conventions | Hosting enforcement still not configured/verified by this implementation |
+| Application roles | Individual Technician/Maintenance specialist and Admin; server-side cookies, password change/reset, user administration and audit; local forward migration preserved complete saved evidence | Team requirement selected 2026-11-08; see [account guide](authentication.md). Azure migration and individual accounts verified on 2026-11-17; Johan confirmed personal login/password change; other members still supply their own acceptance |
+| Branch enforcement | feature/* -> dev -> main with PR checks and independent review as the normal team rule | GitHub states the saved main protection is not enforced on the current private plan; actual owner-authorized exceptions are recorded without claiming independent review |
+| Account and evidence data | Individual account identity, review identity and administration history are real personal data even with synthetic turbine inputs; private backups include account/session tables | Follow the [data-handling policy](data-handling.md), including a manual access/retention review when the project closes; no automatic purge is implemented |
 
 On 2026-11-07 the owner explicitly authorized merging PR #4 after its five checks
 passed because no other group member was available. The merge records this one-off
 decision without claiming an independent review. The normal review convention stays
 in place. The owner also selected the existing Azure hostname instead of adding
 GitHub Pages or a separate public frontend. See the [Danish beginner walkthrough](project-walkthrough-da.md)
-for the project's implementation, choices and course connections.
+for a historical explanation of the November 6–7 implementation, choices and course connections.
 
 An architecture change should record the problem, alternatives, selected approach,
 course/source connection and consequences here or in a focused decision note linked

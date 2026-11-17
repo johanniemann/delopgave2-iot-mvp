@@ -47,7 +47,7 @@ an explicit privileged operation, not a public reset endpoint.
 
 Migration 002 adds account/session/throttle/audit tables; it does not alter existing
 case data. It must be applied forward before the new code serves authenticated data.
-The existing Azure release is unchanged until a separately authorized promotion.
+The authorized Azure forward migration was completed on 2026-11-17; existing case evidence was preserved. See [verified release evidence](verification-2026-11-17.md).
 
 ## Start locally
 
@@ -83,9 +83,10 @@ credential file, copy passwords into Git or reuse an Azure/GitHub password here.
 
 ## Shared deployment and host recovery
 
-Promoting this change is a separate release decision; it has not been deployed to
-Azure. Before promotion back up PostgreSQL and use the established stable Compose
-project/volume. Migration 002 adds only new tables and a recorded schema version;
+The user authorized the shared promotion and specifically approved Johan/Admin,
+Esben/Nix/Bilal/Technician and one temporary Technician test account. The shared
+release was migrated on 2026-11-17 with a verified restore and the established
+stable Compose project/volume. Before every later promotion take and verify a backup. Migration 002 adds only new tables and a recorded schema version;
 a rollback of application code does not remove those tables or reactivate the old
 shared token. Treat any rollback that restores token-only access as an explicit
 access-policy change, not an automatic recovery action.
@@ -111,14 +112,36 @@ revokes sessions, requires a personal password change and records the recovery.
 It cannot promote a Technician. There is no email reset, MFA or external identity
 provider; these remain limits of this small prototype.
 
-Login throttles are persistent: 10 attempts per username and 30 per network peer
-per five minutes. Behind Caddy, peer limits may be shared by the whole group;
-forwarded headers are not trusted to bypass the limit. Repeated retries can block
-valid sign-ins temporarily. Session revocation applies on the next request; already
-running work is not cancelled. The HTTP-only CI proxy check does not authenticate
-with Secure cookies; HTTPS cookie behavior is separately covered by integration tests.
+## Client identity and request limits
 
-## Verification on the local Mac
+The quality-improvement candidate keeps the existing limits: 10 sign-in attempts
+per username and 30 per client IP per five minutes, plus 60 JSON writes per client
+IP per minute per app process. Shared Compose explicitly sets
+`TRUSTED_PROXY_HOST=caddy`. Caddy overwrites `X-Real-IP` with its connection's
+`remote_host`; a caller-supplied value is not forwarded as client identity.
+The application accepts that header only when its socket peer matches a fresh
+DNS lookup of the configured proxy and the header contains exactly one valid IP.
+Uvicorn's generic proxy-header handling remains disabled. Local mode has no trusted
+proxy by default, so supplied forwarding headers cannot select another quota key.
+
+If proxy DNS lookup fails, the peer does not match or the header is missing or
+invalid, the application falls back to its socket peer. This preserves the trust
+boundary but may temporarily combine clients into a shared proxy quota; investigate
+proxy/DNS configuration before repeated retries. Users behind the same public NAT
+still share an IP allowance even when the proxy configuration works. These guards
+are bounded prototype controls, not a distributed edge protection service.
+
+This candidate must pass isolated proxy tests and a selected-release promotion
+before it is described as installed. The last verified Azure release
+`0f1e9d82a2ee36f687292b3781dd7778b6283364` uses the older shared transport-peer
+limits. See [current project context](project-context.md) for release status.
+
+Session revocation applies on the next request; already running work is not
+cancelled. The HTTP-only CI proxy check does not authenticate with Secure cookies;
+HTTPS cookie behavior is separately covered by integration tests. Account identity,
+audit history and private backups follow the [data-handling policy](data-handling.md).
+
+## Earlier verification on the local Mac — 2026-11-08
 
 - **70 application tests passed** against real PostgreSQL: direct role denial,
   forced password change, CSRF, expiry, logout, revocation, resets, concurrent admin
@@ -140,10 +163,9 @@ with Secure cookies; HTTPS cookie behavior is separately covered by integration 
   are absent from exported traces/metrics. Private credential files are excluded
   from Git and Docker build context.
 
-This is local Mac validation. The new release has not been tested on the VM, from
-another member's computer or on Windows. It has no MFA, external identity service,
+This is local Mac validation. These earlier results did not establish VM, another member's computer or Windows behaviour. It has no MFA, external identity service,
 email recovery or distributed IP-aware edge limiter. These limits do not create a
-third role or weaken API checks. The existing shared release remains unchanged.
+third role or weaken API checks. Shared validation on 2026-11-17 is recorded below.
 
 See [course context](course-context.md): E1/E2/E3 and C1/C2 support
 access control, secret handling, safe failures and tests; two roles are a team choice.
@@ -153,3 +175,22 @@ Authoritative references checked 2026-11-08:
 [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html),
 [password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html),
 and [argon2-cffi](https://argon2-cffi.readthedocs.io/en/stable/howto.html).
+
+
+## Shared verification — 2026-11-17
+
+Actual external HTTPS calls verified the selected revision, valid certificate,
+anonymous/old-bearer 401, temporary-password gate, Technician/admin 403, CSRF 403,
+logout 401, session revocation after an account edit, and temporary-password reset.
+All four pre-existing complete case responses matched their v1 baseline. The full
+27-request / 46-assertion Postman workflow passed against the VM, and an actual
+app/database restart preserved the original cases and the new complete case.
+
+The temporary test account was deactivated. The four named person accounts are
+active and were handed over through an ignored owner-only credentials file. Johan
+subsequently confirmed that he signed in and chose his own password. That personal
+password is not known to the agent; later releases must preserve it. Other members
+still need to use their own credentials and record their observations. No agent
+assertion supplies their acceptance or an independent code review.
+
+See [release evidence and remaining limits](verification-2026-11-17.md).

@@ -1,9 +1,11 @@
 # Predictive Maintenance prototype plan
 
-Status: implementation authorized by the user on 2026-11-06. This records the agreed
-scope and acceptance criteria. The local prototype now implements this flow; see
-[development instructions](development.md) and [current project context](project-context.md)
-for actual commands, decisions, validation and remaining remote-deployment work.
+Historical planning snapshot: implementation was authorized on 2026-11-06. The
+scope and domain acceptance examples remain relevant; the future-tense setup
+options and implementation sequence below describe that initial plan. Local and
+shared individual-account deployments have since been implemented. Use
+[development instructions](development.md), [current project context](project-context.md)
+and [deployment evidence](deployment.md) for current commands, decisions and status.
 
 ## Goal and authority
 
@@ -128,7 +130,7 @@ These confirm available mechanisms, not the completion of any implementation.
 - Repeated demo input/review/outcome: no duplicate case or resolution event.
 - Incomplete/failed simulated outcome: case stays open; successful simulated
   outcome: case resolves with the demo origin and evidence visible.
-- Two conflicting actions: server reports a conflict; UI refreshes current state.
+- Two conflicting actions: server returns a conflict; UI refreshes current state.
 - Visible controls: browser walkthrough works end to end, including loading,
   empty/error states and clearly marked synthetic/AI-simulation content.
 - Final MVP evidence: genuine remote API request, database retrieval, application
@@ -145,7 +147,8 @@ These confirm available mechanisms, not the completion of any implementation.
 4. Run browser acceptance checks, extend CI to actual app/test/build checks, then
    configure the authorized remote demonstration and document the run/deploy process.
 
-The demo rule/units and local stack are selected in the API contract and project
-context. The VM database and remote deployment/access approach still need verification.
-Keep those separate from the working local prototype; do not claim a real remote
-request or Azure deployment until demonstrated.
+At the time of this plan, the VM/database and remote access approach still needed
+verification. That work was subsequently completed with a dedicated PostgreSQL
+container; the account-based release was externally verified on 2026-11-17. The
+[current project context](project-context.md) distinguishes that deployed release
+from later feature candidates. A plan alone remains insufficient deployment evidence.
