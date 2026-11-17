@@ -19,7 +19,34 @@ Open `http://localhost:8765` and sign in with an individual local account. Rando
 local Admin/Technician credentials are saved in ignored `.env.accounts-8765.json`;
 see [account setup, permissions and recovery](authentication.md). The environment setup script creates an ignored `.env` with fresh
 local credentials and never overwrites an existing file. Do not copy credentials
-between members or commit `.env`. To use another port, change APP_PORT in `.env`.
+between members or commit `.env`.
+
+Fresh settings also save a checkout-specific `COMPOSE_PROJECT_NAME`, so separate
+clones do not replace each other's containers or attach a new password to the
+same named database volume. Setup checks that its chosen loopback port is free
+before creating the file. If 8765 is occupied, leave the existing installation
+running and choose an unused port for the new checkout:
+
+```sh
+python3 scripts/setup_demo.py --port 8771
+docker compose up -d --build --wait app
+python3 scripts/setup_accounts.py
+```
+
+Open `http://localhost:8771`; local credentials are then in
+`.env.accounts-8771.json`. For fresh settings, `--project aeris-local-second` can
+select a new lowercase project name; an explicit `COMPOSE_PROJECT_NAME` or
+`APP_PORT` environment variable is also honoured, including isolated CI jobs.
+Choose a project name that is not already used by another installation. Keep the
+saved name unchanged after data exists: changing it selects different containers
+and volumes. `aeris-shared` is reserved for the separate shared deployment.
+
+Existing `.env` files are preserved byte-for-byte, including older files without
+a saved project name; rerunning setup does not apply overrides or change their
+database password. To change only their local listening port, edit `APP_PORT`
+deliberately and retain the original project and password. A port preflight is a
+point-in-time check; Compose still refuses a port claimed by another process
+later. Never delete a volume or regenerate a password to solve a port conflict.
 The browser, JSON API and API reference are served by the same application. Swagger
 UI at `/docs` uses FastAPI's standard CDN assets; `/openapi.json` and the dashboard
 are available without those external assets.
@@ -59,7 +86,7 @@ The [local observability guide](observability.md) starts an isolated copy on por
 8766 plus SigNoz on port 3301. It has separate data from the normal port-8765 demo
 and stays off in the default/shared configuration. Use its helper to stop it when
 finished. The [Postman guide](postman.md) demonstrates the complete case flow with
-17 requests and 28 assertions. Neither workflow starts or deploys to Azure.
+27 requests and 46 assertions. Neither workflow starts or deploys to Azure.
 
 ## Validation
 
@@ -142,7 +169,24 @@ CI also takes a private PostgreSQL dump, restores it into a generated disposable
 database and compares saved domain/account evidence. See [release and recovery](release.md)
 for the same operation on the selected environment and the image-promotion process.
 
-Current local evidence: 73 application tests, expanded Newman 27 requests/46
-assertions, HTTP smoke and a real backup/restore have passed on 2026-11-17. The
-release helper safety tests are recorded separately when run. This is not Azure
-promotion or another person's review.
+Current candidate evidence on 2026-11-17: 99 application tests, 42 helper tests,
+Newman 27 requests/46 assertions, HTTP smoke and a real backup/restore have passed.
+Full case evidence remained identical after app/database restart. The installed
+Azure release is recorded separately; these results do not establish promotion
+or another person's review.
+
+The opt-in proxy integration check runs the pinned Caddy image and two clients on
+an internal Docker network, without host ports or database volumes:
+
+```sh
+python3 scripts/test_proxy_header_boundary.py --output .codex-log/caddy-header-proof.json
+```
+
+It requires the pinned Python and Caddy images already present. Pull the exact
+base reference from Dockerfile before the first run; a BuildKit app build alone
+does not guarantee that base image is available to `docker image inspect`. CI
+explicitly pulls that pinned reference and validates/pulls Caddy first.
+The check sends 16 requests with forged or
+duplicate headers and removes only its own temporary containers/network. CI runs
+this check after Caddy configuration validation; importing the helper does not
+start Docker.

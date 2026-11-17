@@ -5,8 +5,11 @@
 1. Accept the repo invitation. Clone the repo or pull the merged setup from main.
 2. Open this repo's root folder in your preferred coding tool. Do not open only a
    source subfolder or the entire surrounding school folder as the project.
-3. Read README and CONTRIBUTING. Use Git and Python 3.10+ to run the three setup checks
-   listed there. Running the app additionally uses Docker as described in README.
+3. Read README and CONTRIBUTING. Use Git, Python 3.10+ and Node.js 18+ to run the
+   helper/guidance checks listed there. Python helpers use the standard library;
+   Node runs only the dashboard JavaScript regression subset. The repository checker
+   and whitespace check alone do not need Node. Running the app uses Docker as
+   described in README and needs no host Node installation.
    No agent packages or shared agent credentials are required. Each contributor chooses and signs in to their own agent separately.
 4. Start a fresh agent session and ask: "Read AGENTS.md and the relevant project and
    course context. State the current implementation status, authority order and checks
@@ -14,7 +17,7 @@
 5. Create a task branch and give one bounded task with acceptance examples. Use the
    common inspect -> plan -> implement -> validate -> review workflow in CONTRIBUTING.
 
-Before this setup is merged, fetch and check out its PR branch instead of assuming
+For a new feature candidate, fetch and check out its PR branch instead of assuming
 it is on main. After merge, normal `git pull --ff-only` brings it to existing clones.
 
 ## Files and loading
@@ -95,7 +98,9 @@ Research behind these choices:
 - [Cursor rules](https://cursor.com/docs/rules): focused guidance and references,
   avoid copying code/style guides into prompts.
 - [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow): short
-  branches and reviewable changes. It is our working convention, not mandated GitFlow.
+  branches and reviewable changes informed the initial workflow. The group's later
+  choice is `feature/* -> dev -> main`, including for the exam; see CONTRIBUTING.
+  This team choice is not a course mandate to adopt a particular branching model.
 - [GitHub Actions secure use](https://docs.github.com/en/actions/reference/security/secure-use):
   least-privilege tokens, immutable action references and no privileged PR execution.
   The workflow pins [checkout v7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1)

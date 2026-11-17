@@ -44,7 +44,10 @@ suffix is useful when one person has multiple tasks. No direct development on ma
    (prefer squash for one focused change). Delete the completed branch, then update
    local dev with `git pull --ff-only origin dev` before the next task.
 
-Current setup checks, from the repo root (Git and Python 3.10+, standard library only):
+Current helper and guidance checks, from the repo root, need Git, Python 3.10+
+and Node.js 18+. Python helpers use the standard library; Node runs the dashboard
+JavaScript regression subset. The repository checker and whitespace check alone
+do not need Node. Running the dashboard through Docker needs no host Node install.
 
 ```sh
 python3 -m unittest discover -s scripts -p 'test_*.py'
@@ -55,6 +58,9 @@ git diff --check
 On Windows use the installed `python` or `py -3` equivalent. For application changes
 also run `docker compose --profile test run --rm --build tests`; with the app running,
 run `python3 scripts/smoke_test.py`. See [development instructions](docs/development.md).
+Use an explicit, separate Compose project when running tests alongside another
+checkout. The optional Newman API runner additionally needs Node/npm as described
+in [Postman](docs/postman.md).
 Review normal/error paths, rule boundaries and actual PostgreSQL persistence. A
 guidance-check pass alone is not an API test or deployment result.
 

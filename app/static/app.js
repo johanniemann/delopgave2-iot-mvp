@@ -144,10 +144,8 @@ async function load(scenarioId = S.detail?.scenario.id) {
   if (S.view === "users" && S.user.role !== "admin") S.view = "overview";
   if (S.view === "users") await loadUsers();
   const data = await api("/api/overview");
-  const selected =
-    scenarioId && data.scenarios.some((s) => s.id === scenarioId)
-      ? scenarioId
-      : data.active_scenario_id;
+  // The overview contains only recent windows; an older selection still has detail.
+  const selected = scenarioId || data.active_scenario_id;
   const detail = selected ? await api(`/api/scenarios/${selected}`) : null;
   S.data = data;
   S.detail = detail;
@@ -459,7 +457,7 @@ function caseRows() {
     : `<tr><td colspan="6"><div class="empty inline"><h3>${S.search ? "No matching cases" : "No cases in this view"}</h3><p>${S.search ? "Try another case ID or scenario title." : "Review a forecast with a current fault to create a predictive case."}</p></div></td></tr>`;
 }
 function casesTable() {
-  return `<section class="card"><div class="card-header"><h2>Predictive maintenance cases</h2>${button(icon("download") + "Export CSV", "export")}</div><div class="table-toolbar"><div class="tabs" aria-label="Case status">${["All", "Open", "Resolved"].map((t) => `<button data-action="case-filter" data-filter="${t}" class="${S.filter === t ? "active" : ""}" aria-pressed="${S.filter === t}">${t}<span>${S.data.cases.filter((c) => t === "All" || c.status === t).length}</span></button>`).join("")}</div><div class="table-actions"><label class="search-box">${icon("search")}<span class="sr-only">Search cases</span><input id="case-search" placeholder="Search cases…" value="${esc(S.search)}" type="search"></label></div></div><div class="table-wrap"><table><thead><tr><th>CASE</th><th>TURBINE</th><th>REVIEWED RISK</th><th>STATUS</th><th>CREATED</th><th><span class="sr-only">Open case</span></th></tr></thead><tbody id="case-rows">${caseRows()}</tbody></table></div><div class="table-footer"><span id="case-result-count">${filteredCases().length} ${filteredCases().length === 1 ? "case" : "cases"} shown</span><span>Seeded history and interactive demo records</span></div></section>`;
+  return `<section class="card"><div class="card-header"><h2>Predictive maintenance cases</h2>${button(icon("download") + "Export CSV", "export")}</div><div class="table-toolbar"><div class="tabs" aria-label="Case status">${["All", "Open", "Resolved"].map((t) => `<button data-action="case-filter" data-filter="${t}" class="${S.filter === t ? "active" : ""}" aria-pressed="${S.filter === t}">${t}<span>${S.data.cases.filter((c) => t === "All" || c.status === t).length}</span></button>`).join("")}</div><div class="table-actions"><label class="search-box">${icon("search")}<span class="sr-only">Search cases</span><input id="case-search" placeholder="Search cases…" value="${esc(S.search)}" type="search"></label></div></div><div class="table-wrap"><table><thead><tr><th>CASE</th><th>TURBINE</th><th>REVIEWED RISK</th><th>STATUS</th><th>CREATED</th><th><span class="sr-only">Open case</span></th></tr></thead><tbody id="case-rows">${caseRows()}</tbody></table></div><div class="table-footer"><span id="case-result-count">${filteredCases().length} ${filteredCases().length === 1 ? "case" : "cases"} shown</span><span>Latest 100 cases · Seeded history and interactive demo records</span></div></section>`;
 }
 function overviewView() {
   return (
@@ -472,7 +470,11 @@ function casesView() {
   return metrics() + casesTable();
 }
 function picker() {
-  return `<div class="analysis-picker"><div><label for="scenario-picker">ANALYSIS WINDOW</label><select id="scenario-picker">${S.data.scenarios.map((s) => `<option value="${s.id}" ${s.id === S.detail?.scenario.id ? "selected" : ""}>${esc(s.title)} · ${dt(s.created_at)}</option>`).join("")}</select></div><div class="analysis-meta"><span class="source-label">${esc(S.detail?.scenario.source || "No data")}</span>${button(icon("refresh") + "Refresh", "refresh")}</div></div>`;
+  const selected = S.detail?.scenario;
+  const older = selected && !S.data.scenarios.some((s) => s.id === selected.id)
+    ? `<option value="${esc(selected.id)}" selected>Selected older window · ${esc(selected.title)} · ${dt(selected.created_at)}</option>`
+    : "";
+  return `<div class="analysis-picker"><div><label for="scenario-picker">ANALYSIS WINDOW</label><select id="scenario-picker">${older}<optgroup label="Latest 100">${S.data.scenarios.map((s) => `<option value="${esc(s.id)}" ${s.id === selected?.id ? "selected" : ""}>${esc(s.title)} · ${dt(s.created_at)}</option>`).join("")}</optgroup></select></div><div class="analysis-meta"><span class="source-label">${esc(selected?.source || "No data")}</span>${button(icon("refresh") + "Refresh", "refresh")}</div></div>`;
 }
 function gateCard() {
   const d = S.detail;
@@ -580,7 +582,7 @@ function modal(content) {
   if (!el.open) el.showModal();
 }
 function modalHeader(title, description) {
-  return `<div class="modal-heading"><h2>${title}</h2><button class="icon-button" data-action="close" aria-label="Close dialog">${icon("x")}</button></div><p class="modal-description">${description}</p>`;
+  return `<div class="modal-heading"><h2>${esc(title)}</h2><button class="icon-button" data-action="close" aria-label="Close dialog">${icon("x")}</button></div><p class="modal-description">${esc(description)}</p>`;
 }
 function closeModal() {
   document.getElementById("modal").close();

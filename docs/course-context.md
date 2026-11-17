@@ -1,6 +1,7 @@
 # Course authority and evidence
 
-Reviewed 2026-11-06. This is a portable, concise summary for a standalone clone.
+Initially reviewed 2026-11-06; source locations checked again on 2026-11-17.
+This is a portable, concise summary for a standalone clone.
 Original PDFs/DOCX remain in the group's supplied course bundle, not this repo.
 Source paths below are relative to that bundle's root, not to a particular Mac.
 Page references are PDF page numbers. Recheck originals when requirements change;
@@ -55,18 +56,18 @@ clear architecture, understandable demonstration, documentation and reflection.
 | A2 | `03. Delopgaver/02. Delopgave 2/2_Præsentation_delopgave2.pdf` | pp. 2-4 requirements; p. 5 inspirational push/test/build/deploy example; pp. 6-9 deliverables and assessment |
 | C1 | `01. Slides fra undervisningen/11_1_CloudNative_Chapter_3_Architecture_Principles.pdf` | p. 8 automation; p. 11 evolutionary design and guiderails; p. 18 shift-left; API-first discussion pp. 6-8 |
 | C2 | `01. Slides fra undervisningen/11_2_CloudNative_Chapter_9_Designing_for_ilities.pdf` | p. 4 versioned policy/configuration; p. 6 security checks; p. 21 CI/CD and infrastructure automation |
-| C3 | `02. Fagsbeskrivelse og retningslinjer/GenerativAI-retningslinjer.pdf` | pp. 1-2, version 1.0 effective 2026-09-07: meaningful AI use must be documented and critically assessed |
-| C4 | `02. Fagsbeskrivelse og retningslinjer/Fagsforløb.pdf` | p. 3 automation/CI/CD/drift; p. 12 earlier broad task overview. Use A1/A2 for specific assignment details |
+| C3 | Previously supplied `GenerativAI-retningslinjer.pdf`; original currently unavailable in the reorganized bundle | Earlier review recorded pp. 1-2, version 1.0 effective 2026-09-07: meaningful AI use must be documented and critically assessed. Those pages/version were not independently rechecked on 2026-11-17; obtain the original for a new policy interpretation |
+| C4 | `02. Fagsbeskrivelse/Fagsforløb.pdf` | p. 3 automation/CI/CD/drift; p. 12 earlier broad task overview. Use A1/A2 for specific assignment details |
 | C5 | `01. Slides fra undervisningen/7_2_Eventstorming.pdf` | EventStorming/context modelling; read alongside the domain material in D1 |
 | C6 | `01. Slides fra undervisningen/11_4_Netvaerk_og_datasikkerhed.pdf` | p. 16 secure design and shift-left; security is part of development |
-| E1 | `05. Øvelser/01_Hands-on 1- Sikkerhed i sensor-APIet.pdf` and `sensor_api_starter.py` in that folder | Local exercise: input validation, SQL injection prevention and API-key authentication. Starter is deliberately insecure and uses local SQLite; neither SQLite nor its sample threshold is an MVP requirement |
-| E2 | `05. Øvelser/02_Hands-on 2- Hemmeligheder i Azure Key Vault.pdf` | pp. 1-4: keeping real secrets out of code/repo and using a runtime secret service; Key Vault is the exercise technology |
-| E3 | `05. Øvelser/03_Hands-on 3- Log, begræns og fejl sikkert.pdf` | Logging, rate limiting and safe failures as concrete security practices |
+| E1 | `06. Øvelser/01_Hands-on 1- Sikkerhed i sensor-APIet.pdf` and `sensor_api_starter.py` in that folder | Local exercise: input validation, SQL injection prevention and API-key authentication. Starter is deliberately insecure and uses local SQLite; neither SQLite nor its sample threshold is an MVP requirement |
+| E2 | `06. Øvelser/02_Hands-on 2- Hemmeligheder i Azure Key Vault.pdf` | pp. 1-4: keeping real secrets out of code/repo and using a runtime secret service; Key Vault is the exercise technology |
+| E3 | `06. Øvelser/03_Hands-on 3- Log, begræns og fejl sikkert.pdf` | Logging, rate limiting and safe failures as concrete security practices |
 | D1 | Earlier group domain analysis and project model | Context for modular deployment, domain semantics and the selected Predictive Maintenance boundary; not a requirement to build all proposed contexts |
 | D2 | `03. Delopgaver/01. Delopgave 1/D-Domain-Analysis.md`, `D-Domain-Analysis-Managed-Services-English.md`, `E-Kravspecifikation.md`, `E-Arkitekturretning-og-moenstre.md` | Earlier student proposals; terminology and candidate rules, reconciled with D1 and A1/A2 |
-| D3 | `10. Logs:Scripts-, code-filer to Codex/03. Eksempeldata/E-API-Examples.md` | Proposed HTTP contracts, durable handoff and concurrency rules; explicitly not implemented endpoints |
-| D4 | `10. Logs:Scripts-, code-filer to Codex/02. Figurer/Intelligent-Failure-and-Maintenance-Full.png` | Same flow as the user's supplied diagram: Predictive Maintenance stages 1, 2a/2b, 3 and 8; both incident and reviewed forecast required before a case. Stages 4-7 belong to the excluded Better Maintenance context |
-| B1 | `04. Bøger til ekstra/Cloud Native Architecture and Design A Handbook for Modern Day Architecture and Design witb Enterprise Grade Examples.pdf` | Supplementary book: PDF p. 443 branching/traceability/quality gates; pp. 490-492 CI/delivery/deployment. Supports rationale, not an assignment mandate |
+| D3 | `99. Internal Logs:Scripts-, Code-files to AI-agent(s)/03. Eksempeldata/E-API-Examples.md` | Proposed HTTP contracts, durable handoff and concurrency rules; explicitly not implemented endpoints |
+| D4 | `99. Internal Logs:Scripts-, Code-files to AI-agent(s)/02. Figurer/Intelligent-Failure-and-Maintenance-Full.png` | Same flow as the user's supplied diagram: Predictive Maintenance stages 1, 2a/2b, 3 and 8; both incident and reviewed forecast required before a case. Stages 4-7 belong to the excluded Better Maintenance context |
+| B1 | `05. Bøger til ekstra/Cloud Native Architecture and Design A Handbook for Modern Day Architecture and Design witb Enterprise Grade Examples.pdf` | Supplementary book: PDF p. 443 branching/traceability/quality gates; pp. 490-492 CI/delivery/deployment. Supports rationale, not an assignment mandate |
 
 Other teaching files and the teaching-description DOCX were searched for relevant
 workflow guidance. That earlier search did not establish a required strategy. The newer C8/C9
@@ -90,7 +91,8 @@ materials below and the team decision now supply the workflow context. Some imag
 
 ## AI transparency in everyday work
 
-C3 requires documenting meaningful generated code, content and substantive suggestions,
+The earlier C3 review records a requirement to document meaningful generated code,
+content and substantive suggestions,
 including how students assess/adapt them. It does not require full chat exports.
 Its suggested record includes student, prompt description, tool/model, purpose and
 result. [AI-use notes](ai-use.md) records development evidence, technical validation and
@@ -117,5 +119,6 @@ has happened before a contributor has actually performed it.
   release delivery, safer logging, backup/restore and the Azure account upgrade.
   Human review and actual teammate usage remain evidence that only people can supply.
 
-E1-E3 are in the supplied bundle's `06. Øvelser` folder after its reorganization;
-older register paths reflect the earlier bundle layout. Source PDFs remain outside Git.
+The register uses the bundle locations observed on 2026-11-17. C3 remains an
+explicit source-availability gap; its absence does not waive AI transparency or
+authorize a claim of independent human authorship. Source PDFs remain outside Git.

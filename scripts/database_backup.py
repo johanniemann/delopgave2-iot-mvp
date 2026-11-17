@@ -100,7 +100,7 @@ def verify_restore(compose, manifest):
         result = manifest.with_suffix(".verified.json")
         private_json(result, {"verified_at": datetime.now(timezone.utc).isoformat(),
                               "compose_project": data["compose_project"], "database": data["database"],
-                              "archive_sha256": data["archive_sha256"], "evidence": data["evidence"],
+                              "archive": archive.name, "archive_sha256": data["archive_sha256"], "evidence": data["evidence"],
                               "restored_into_isolated_database": True})
         return result
     finally:

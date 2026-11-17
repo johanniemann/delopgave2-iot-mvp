@@ -9,9 +9,10 @@ preserves all existing cases. It has no reset/delete request or committed creden
 
 1. Start `python3 scripts/observability.py up` (port 8766), or the normal local app
    on port 8765 followed by `python3 scripts/setup_accounts.py`.
-2. Import `postman/Aeris.postman_collection.json` from **this checkout**. The older
-   workspace copy remains the previously merged token-era contract until this PR
-   is reviewed/merged and explicitly synchronized; Git is the reviewable source.
+2. Import `postman/Aeris.postman_collection.json` from **the selected release
+   checkout**. A previously imported or synchronized workspace copy may be older;
+   its current content has not been reverified here. Compare/reimport the reviewed
+   collection rather than assuming a workspace copy matches the selected commit.
 3. Set `base_url` to the chosen local origin. Set `login_username` to your Technician
    username. Keep the password in **Postman Local Vault**; reference it as
    `{{vault:aeris-password}}` in the login request's password value, replacing the
@@ -59,8 +60,10 @@ not proof that this branch is deployed to Azure or another member has tested it.
 
 ## Shared deployment
 
-After a separately authorized promotion, use the VM's HTTPS origin and your own
-Technician account. The old shared token is no longer accepted by this code. Secure
+The account-based Azure release `0f1e9d82a2ee36f687292b3781dd7778b6283364` was
+externally verified on 2026-11-17. Use the VM's HTTPS origin and your own
+Technician account. Later feature candidates require separate promotion and
+verification. The old shared token is no longer accepted. Secure
 cookies require HTTPS. The VM must be deliberately started for a shared demo and
 deallocated afterwards. See [account setup and limits](authentication.md) and
 [deployment](deployment.md). GitHub collaborator access does not grant Postman
