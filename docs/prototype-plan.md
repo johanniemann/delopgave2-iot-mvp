@@ -128,7 +128,7 @@ These confirm available mechanisms, not the completion of any implementation.
 - Repeated demo input/review/outcome: no duplicate case or resolution event.
 - Incomplete/failed simulated outcome: case stays open; successful simulated
   outcome: case resolves with the demo origin and evidence visible.
-- Two conflicting actions: server reports a conflict; UI refreshes current state.
+- Two conflicting actions: server returns a conflict; UI refreshes current state.
 - Visible controls: browser walkthrough works end to end, including loading,
   empty/error states and clearly marked synthetic/AI-simulation content.
 - Final MVP evidence: genuine remote API request, database retrieval, application
