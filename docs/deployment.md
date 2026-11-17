@@ -7,59 +7,41 @@ that might already be installed on the VM. Inspect the host before first deploym
 
 ## Deployment state
 
-**2026-11-08 account release:** this branch replaces the shared token with individual
-Admin/Technician sessions. It is verified locally and has not been promoted to Azure.
-The installed VM release described below still uses the earlier token arrangement.
-Read [account bootstrap, forward migration and recovery](authentication.md) before
-promoting; do not apply the new release without preparing the first administrator.
-
-
-The accepted prototype is running on the existing VM. The approved Azure firewall
-permits TCP 80/443 and restricts Johan's
-SSH rule to his current public IPv4 /32. The VM's nightly shutdown is enabled at
-**00:00 in the Copenhagen time zone**. There is no automatic startup schedule.
-The existing static public IP now has the verified DNS name
-`aeris-studiegruppe-linux.swedencentral.cloudapp.azure.com` (20.91.193.131).
+**2026-11-17:** the account-based release is deployed and externally verified.
+Selected application revision: `0f1e9d82a2ee36f687292b3781dd7778b6283364`.
+Later documentation-only commits do not change the installed application revision.
+The actual shared system uses the existing Ubuntu 24.04 VM in Sweden Central,
+2 vCPU / 4 GiB, stable Compose project `aeris-shared`, persistent PostgreSQL volume
+`aeris-shared_demo-data` and existing Caddy certificate volumes. Only Caddy ports 80/443
+are public; app 8765 is loopback and PostgreSQL 5432 is not host-published. SSH is
+restricted to approved source addresses. The selected source commit is returned
+by `/health` and recorded in the release manifest and `RELEASE_COMMIT`.
 
 Open [the shared dashboard](https://aeris-studiegruppe-linux.swedencentral.cloudapp.azure.com/)
-with the group's private access token. The 2026-11-06 pilot verified personal SSH
-access, a fresh Docker installation, HTTP-to-HTTPS redirect, a publicly trusted
-certificate, real PostgreSQL readiness, HTTP 401 without a token, and authenticated
-API calls from the developer's Mac to the VM. The public browser walkthrough saved
-a review and case; a failed simulated outcome kept it open, and a successful one
-resolved it. Synthetic QA records are labelled accordingly. This is an external
-computer calling the VM API; it is not evidence that every teammate has tested access.
+when the VM is deliberately started. It now requires an individual account;
+the previous shared token cannot authenticate. Johan is Admin; Esben, Nix and
+Bilal are Technician. Credentials are handed over privately and each person
+chooses a personal password. No repository/SSH/database credential is shared.
 
-The actual app and database containers were stopped and started with the same named
-volume. The full QA case response (96 readings, saved review, two outcomes and event
-history) was identical before/after. Local validation passed 43 application tests,
-11 helper/guidance tests, repository/whitespace checks, Caddy validation, and real
-local/shared HTTP smoke checks. [PR #4](https://github.com/johanniemann/delopgave2-iot-mvp/pull/4)
-was merged on 2026-11-07 after all five checks passed and the owner explicitly
-authorized an exception while the other members were unavailable. This was an owner
-merge decision, not an independent review or self-approval. Teammate review remains
-follow-up work. The VM's release directory records its source
-commit in `RELEASE_COMMIT`, and `~/aeris/current` identifies the selected release.
+The exact CI-tested image and matching source archive were transferred with
+verified checksums, loaded without rebuilding and promoted with a recent actual
+isolated backup restore. Forward migration 002 preserved all existing domain data.
+External HTTPS Postman passed 27 requests / 46 assertions. Account controls, all four
+original complete cases and a new complete case were verified; the cases remained
+identical after a real app/database restart. See [detailed evidence](verification-2026-11-17.md).
 
-The initial host inspection found no Docker/database packages or listeners on the
-application/web/database ports. Docker Engine 29.9.3 and Compose plugin 5.7.0 were
-installed from Docker's official signed Ubuntu repository. The app, database and
-proxy have separate containers; only 80/443 are public, app 8765 is loopback only.
-Shutdown is saved in Azure; an actual midnight stop has not yet been observed.
+The VM's saved auto-shutdown is 00:00 Copenhagen time, with no automatic startup.
+Manual deallocation/startup has been observed; the midnight job itself has not been
+observed firing. This intentionally stopped demo is not continuous availability.
+It is stopped/deallocated again after the authorized checks; start it for group
+practice or the recording. Another member's own computer and examiner repo access
+remain explicit human acceptance tasks.
 
-On 2026-11-07 the VM was started from its previously verified deallocated state.
-The named HTTPS endpoint, unauthenticated rejection, authenticated API and public
-dashboard worked without reinstalling. The complete saved QA case response matched
-the previous day's baseline, including 96 readings, the review, both outcomes and
-events. The VM was then stopped and **Stopped (deallocated)** was verified again.
-The automatic midnight schedule remains a separate saved safeguard; these manual
-stops do not establish that the scheduled job itself has fired.
-
-The owner selected the existing VM hostname after reviewing GitHub Pages. Pages
-cannot directly host the Python/PostgreSQL service or turn a github.io address into
-an arbitrary VM DNS alias. It also needs a qualifying plan for a private source
-repository. No public frontend repository, Pages site, domain purchase or subscription
-was created. The selected topology remains one origin for dashboard and API.
+The original November 6-7 pilot established trusted HTTPS, authenticated remote
+access and data persistence using the earlier token-based release. Those historical
+results do not establish the new account controls; the November 17 checks above do.
+The host uses Docker Engine 29.9.3 and Compose 5.7.0. No paid monitoring stack,
+additional VM or identity service was provisioned. Optional SigNoz remains local.
 
 ## One-time host preparation
 
@@ -92,46 +74,35 @@ was created. The selected topology remains one origin for dashboard and API.
 
 ## Release procedure
 
-Use a reviewed commit with passing application/repository checks. The initial
-authorized pilot may use the deployment task branch; record that explicitly rather
-than claiming it is merged or independently reviewed. Keep the source commit ID
-with the release. Transfer only versioned source (for example a `git archive`), not
-the developer's `.env`, local database, SSH keys or full school folder. The VM does
-not need a permanent GitHub token or write access to the repository.
+Follow [tested image delivery and recovery](release.md). The normal workflow is
+feature -> dev -> main through PRs and checks. Select the approved immutable main
+commit and its successful application run. The trusted publication job publishes
+the same tested image to private GHCR; the source/image artifact also allows
+promotion without storing a permanent registry credential on the VM.
 
-From the chosen release directory **on the VM**, with Docker access:
+1. Download the selected run's artifact; verify its GitHub digest, manifest revision
+   and archive checksums. Transfer only the release bundle, not local credentials.
+2. Take a private `pg_dump`, restore into a generated disposable database, compare
+   complete domain/account fingerprints and remove only that disposable database.
+3. Use the current `scripts/promote_release.py` from the reviewed maintenance tools
+   with the exact revision, bundle, private settings, verified backup and releases
+   directory. It preserves the stable project, database/certificate volumes and
+   existing account data. Release roots are resolved before changing directory.
+4. Verify `/health`, the authoritative `~/aeris/current` pointer, running image,
+   external HTTPS, account controls and saved domain data. A log saying promotion
+   succeeded alone is insufficient; the November 17 pointer regression illustrates why.
 
-```sh
-python3 scripts/deploy_shared.py --env-file ../../.env.shared
-```
+The old `scripts/deploy_shared.py` builds from source and remains useful for initial
+setup; it is not the selected path for promoting the CI-tested image. Do not rebuild
+an image on the VM and describe it as the same artifact CI tested. Do not use
+`down --volumes`, volume pruning or a reset on the shared demonstration. Application
+rollback does not undo a migration or authorize restoring token-only access.
 
-The current Azure account uses `sudo -n python3 scripts/deploy_shared.py --env-file
-../../.env.shared` instead of Docker-group membership. It already has authorized
-administrator access; the release procedure does not grant another account access.
-
-The script checks private file permissions, validates the merged configuration and
-Caddyfile, then builds/starts the `aeris-shared` Compose project. Keep that project
-name stable: its named PostgreSQL and certificate volumes survive container rebuilds
-and VM shutdown/start. The app remains on loopback port 8765; Caddy reaches it over
-the Compose network. Only Caddy publishes web ports. Caddy automatically redirects
-HTTP to HTTPS and obtains/renews a trusted certificate when public DNS/80/443 work.
-Its admin endpoint is not published. Container logs have bounded rotation.
-Uvicorn does not trust forwarded client addresses; behind this single proxy the
-existing 60-write/minute limit is shared by the demo group, not a per-person quota.
-
-For host commands, always use the **same environment file, both Compose files and
-project name**, substituting the real absolute path to the private settings:
-
-```sh
-docker compose --project-name aeris-shared --env-file ../../.env.shared -f compose.yaml -f compose.shared.yaml ps
-```
-
-The deployment script does not provision Azure, change firewall rules, delete
-volumes or start the VM. The new app applies recorded forward migrations on startup. On a failed release, inspect status
-and return to the previous compatible source release with the same settings/project.
-Never use `down --volumes`, `docker system prune --volumes` or a database reset on
-the shared demo. Before a schema change, make a private `pg_dump` backup and design
-a forward migration; restoring old source cannot undo a database migration.
+For read-only host commands use the selected release's same private settings,
+stable project and explicit Compose files. The app image override needs the
+`AERIS_RELEASE_IMAGE` from its manifest; `docker exec` can inspect the named running
+container without reinterpreting incomplete Compose configuration. Never print
+settings, session/token tables, private credentials or shell tracing in a demo.
 
 ## Verify and hand over
 

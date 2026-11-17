@@ -113,8 +113,12 @@ coverage. Nightly intentional VM shutdown must not be described as continuous up
 Local 2026-11-17: real backup/restore comparison passed, as did the expanded
 Postman workflow and 73 application tests. Helper safety checks reject altered
 archives, path traversal, wrong-project evidence and unsafe restore targets.
-Registry publication, actual CI artifacts and shared promotion are recorded only
-after their real executions; this guide alone is not evidence they have happened.
+Trusted GHCR publication, checksummed CI artifacts, actual shared promotion, external
+HTTPS/Postman/account controls and persistence after an app/database restart were
+verified on 2026-11-17. See [recorded evidence](verification-2026-11-17.md). A final
+relative-path defect was reproduced and fixed with a full-entry-point regression;
+all 24 helper tests now pass. Always verify both the runtime image and shared current
+pointer, as well as data, after promotion.
 
 Official references checked 2026-11-17:
 [pip-audit](https://github.com/pypa/pip-audit),
