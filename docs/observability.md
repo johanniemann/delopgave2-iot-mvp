@@ -158,7 +158,7 @@ Current traces cover the HTTP request, not individual database queries. Existing
 container logs and the business event timeline remain separate; they are not
 exported to SigNoz. This is not an audit-grade identity or incident-response system.
 There is no external uptime check, so this same-computer stack cannot independently
-report the host's own shutdown. Retention uses SigNoz defaults; the demo is for short
+signal the host's own shutdown. Retention uses SigNoz defaults; the demo is for short
 sessions, not unattended data collection. Container logs are capped at 2 × 10 MB.
 
 ## Course rationale and maintenance

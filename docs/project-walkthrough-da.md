@@ -38,7 +38,7 @@ Vi gemmer også en tidslinje over det, der er sket. For eksempel er Review Failu
 
 Denne sammenhæng gør diagrammet fra delopgave 1 synligt i den faktiske brugeroplevelse. Reglerne ligger også i programmet. Det er ikke tilstrækkeligt blot at skjule en knap, fordi nogen ellers kunne forsøge at kalde API'et direkte.
 
-Rapporten fra delopgave 1 nævner også andre mulige forløb, for eksempel akut overdragelse uden en prognose. De beskrives som forslag, der skal valideres. Prototypen følger den konkrete kombinationsmodel, som gruppen valgte: både fejlhændelse og gennemgået prognose før en sag. Vi har ikke implementeret alle forslagene i den større rapport. (D1; T1.)
+Den tidligere domænemodel nævner også andre mulige forløb, for eksempel akut overdragelse uden en prognose. De beskrives som forslag, der skal valideres. Prototypen følger den konkrete kombinationsmodel, som gruppen valgte: både fejlhændelse og gennemgået prognose før en sag. Vi har ikke implementeret alle forslagene i den bredere model. (D1; T1.)
 
 ## 3 Hvad der sker bag skærmen
 
@@ -184,9 +184,9 @@ Merge af PR #4 tilføjede deploymentopsætningen til main. Det var ikke en ny in
 | Små fungerende skridt | Ét afgrænset domæne og simuleret prognose | C1 side 11; T1 |
 | Synlig AI anvendelse | AI-log og menneskelig vurdering skal følge bidragene | C3 side 1-2 |
 
-Tabellen viser faglige forbindelser. Den er ikke en erklæring om, at hele afleveringen allerede er færdig eller bedømt. Vi mangler blandt andet den planlagte videodemonstration og den selvstændige rapport på 5-7 sider. Opgaven beskriver også en demonstration med Postman og visning af persistens. Vi har afprøvet tilsvarende API- og databasefunktioner, men har ikke her optaget den færdige aflevering eller dokumenteret en særskilt Postman-demonstration. (A1, side 2-3; A2, side 6-9.)
+Tabellen viser faglige forbindelser mellem produktet og undervisningen. Den eksterne Postman-kørsel på Azure er nu verificeret med 27 requests og 46 assertions uden fejl. SQL viser gemt sensorinput, regeloutput og hændelser; en faktisk app- og databasegenstart bevarede de oprindelige sager og den nye komplette testsag. Se den [daterede tekniske verifikation](verification-2026-11-17.md).
 
-Det næste overskuelige skridt er, at et andet gruppemedlem prøver dashboardet fra sin egen computer og gennemgår den sammenlagte ændring. Herefter vælger vi én konkret forbedring ad gangen. Håndhævet branch-beskyttelse afventer fortsat GitHub-planen. Individuelle logins, central hemmelighedshåndtering og en mere automatiseret Azure-udgivelse er mulige forbedringer; de er ikke allerede implementeret.
+Det næste gruppetrin er uafhængigt review og afprøvning fra de øvrige medlemmers egne computere. Individuelle logins og levering af det testede image til Azure er implementeret. Den gemte main-beskyttelse håndhæves ikke under den aktuelle private GitHub-plan; normal reviewpraksis skal fortsat følges aktivt.
 
 ## Ordliste
 
@@ -226,7 +226,7 @@ Det næste overskuelige skridt er, at et andet gruppemedlem prøver dashboardet 
 
 Sidenumrene nedenfor henviser til PDF'ens sider. Undervisningsfilerne findes i gruppens skolemappe og er ikke kopieret ind i GitHub-repoet. Opgavekrav, undervisningsprincipper og gruppens beslutninger har forskellige roller og er derfor angivet hver for sig.
 
-- **A1:** 1_Delopgave_2_Teknisk_MVP_REST_API_Microservice.pdf. Side 1 beskriver formål og domænescenarie; side 2 beskriver produktkrav, demonstration og rapport; side 3 beskriver vurderingskriterier.
+- **A1:** 1_Delopgave_2_Teknisk_MVP_REST_API_Microservice.pdf. Side 1 beskriver formål og domænescenarie; side 2 beskriver produktkrav og demonstration; side 3 beskriver vurderingskriterier.
 - **A2:** 2_Præsentation_delopgave2.pdf. Side 2-5 forbinder domæne og teknisk produkt. Side 5 kalder arkitekturen inspiration, ikke et krav. Side 6-9 beskriver afleveringen og vurderingen.
 - **C1:** 11_1_CloudNative_Chapter_3_Architecture_Principles.pdf. Side 6-8 om ansvar, domæner, forbrugerorienterede API'er og automatisering; side 11 om løbende videreudvikling; side 18 om shift left og containeransvar.
 - **C2:** 11_2_CloudNative_Chapter_9_Designing_for_ilities.pdf. Side 4 om versioneret sikkerhedspolitik og mindste privilegium; side 6 om sikkerhedstest og sikre fejl; side 21 om automatisering.
@@ -235,11 +235,11 @@ Sidenumrene nedenfor henviser til PDF'ens sider. Undervisningsfilerne findes i g
 - **E1:** 01_Hands-on 1- Sikkerhed i sensor-APIet.pdf, især side 3-5. Ugyldige data, SQL injection, validering og API-nøgler. Øvelsens 25 m/s og SQLite er eksempler, ikke vores valgte løsning.
 - **E2:** 02_Hands-on 2- Hemmeligheder i Azure Key Vault.pdf, side 1-3. Adskillelse af kode og hemmeligheder samt en konkret Key Vault-øvelse.
 - **E3:** 03_Hands-on 3- Log, begræns og fejl sikkert.pdf, side 1-5. Drifts- og sikkerhedslogs, begrænsning af kald, sikre fejl og oprydning i cloudressourcer.
-- **D1:** Gruppens rapport Datadrevet_drift_og_vedligeholdelse_Endelig.docx, afsnit 5-6 og bilag G-J, samt diagrammet Intelligent Failure and Maintenance. Det er gruppens projektmodel, ikke et nyt krav fra underviseren.
+- **D1:** Gruppens tidligere domænemodel og diagrammet Intelligent Failure and Maintenance. Det er gruppens projektmodel, ikke et nyt krav fra underviseren.
 - **T1:** Gruppens beslutninger den 6. november om kun Predictive Maintenance, engelsk dashboard og tydeligt simuleret vedligeholdelsesresultat; den 7. november om ejerbeslutning ved merge og fortsat brug af VM-domænet.
 - **P4:** [PR 4 og den registrerede mergebeslutning](https://github.com/johanniemann/delopgave2-iot-mvp/pull/4). Kode og pipelinefiler samt projektets API-, deployment-, kursus- og AI-vejledning dokumenterer implementeringen.
 - **W1:** [GitHub om godkendelse og egne pull requests](https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews) og [planer for branch-beskyttelse](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches), kontrolleret 7. november 2026.
 - **W2:** [GitHub Pages og plantilgængelighed](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages) samt [oprettelse og begrænsning til statisk hosting](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site), kontrolleret 7. november 2026.
 - **W3:** [Microsoft om VM-tilstande og fakturering](https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing), kontrolleret 7. november 2026. Deallokeret regnekraft faktureres ikke som kørende VM, mens andre bevarede ressourcer fortsat kan koste.
 
-Forklaringen er udarbejdet med hjælp fra Codex. Værktøjet har undersøgt projektfiler og kilder, skrevet forklaringen og udført de beskrevne tekniske kontroller. Gruppen skal selv gennemlæse, vurdere og rette teksten før den bruges som en del af en aflevering. Det er ikke registreret som et allerede gennemført uafhængigt menneskeligt review.
+Forklaringen er udarbejdet med hjælp fra Codex. Værktøjet har undersøgt projektfiler og kilder, skrevet forklaringen og udført de beskrevne tekniske kontroller. Gruppen skal selv gennemlæse, vurdere og rette teksten før den bruges som teknisk vejledning. Det er ikke registreret som et allerede gennemført uafhængigt menneskeligt review.

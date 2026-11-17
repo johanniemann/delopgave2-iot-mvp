@@ -62,7 +62,7 @@ guidance-check pass alone is not an API test or deployment result.
 
 The intended main-branch guardrails are PRs, one other member's approval, successful
 required checks, resolved conversations, and no force-push or deletion of main.
-On 2026-11-17 GitHub explicitly reported that the saved main rule is not enforced
+On 2026-11-17 GitHub explicitly stated that the saved main rule is not enforced
 under the current private-repository plan. These remain **team review/merge rules**
 until effective hosting enforcement is available and verified. Do not change plan,
 visibility or access as an implicit workaround. Private-repo
