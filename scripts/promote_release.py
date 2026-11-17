@@ -63,7 +63,8 @@ def main():
         parser.error("Shared settings must be owner-readable only.")
     data = validate_bundle(bundle, args.revision)
     backup = require_backup(args.backup_verification.resolve())
-    destination = args.releases.resolve() / args.revision
+    releases = args.releases.resolve()
+    destination = releases / args.revision
     if destination.exists():
         parser.error("This release directory exists; inspect it before attempting another promotion.")
     destination.mkdir(parents=True)
@@ -99,7 +100,7 @@ def main():
             if table != "schema_versions" and after["tables"].get(table) != expected:
                 raise ValueError("Pre-existing database evidence changed during promotion.")
         (destination / "release.json").write_text(json.dumps(data, indent=2) + "\n")
-        current = args.releases.resolve().parent / "current"
+        current = releases.parent / "current"
         if current.exists() and not current.is_symlink():
             raise ValueError("Current release pointer is not a symlink; inspect before replacing it.")
         temporary = current.with_name(".current-" + args.revision[:12])

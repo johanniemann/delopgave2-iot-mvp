@@ -2,9 +2,11 @@
 from datetime import datetime, timezone
 import io
 import json
+import os
 from pathlib import Path
 import tarfile
 import tempfile
+import sys
 import unittest
 from unittest.mock import patch
 
@@ -13,6 +15,55 @@ import promote_release
 
 
 class ReleaseSafetyTests(unittest.TestCase):
+    def test_relative_release_directory_updates_the_shared_pointer_after_chdir(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            maintenance = root / "maintenance"
+            maintenance.mkdir()
+            releases = root / "releases"
+            releases.mkdir()
+            old = releases / "previous"
+            old.mkdir()
+            current = root / "current"
+            current.symlink_to(old)
+            bundle = root / "incoming"
+            bundle.mkdir()
+            with tarfile.open(bundle / "source.tar.gz", "w:gz"):
+                pass
+            (bundle / "image.tar.gz").write_bytes(b"tested-image")
+            revision = "a" * 40
+            image_id = "sha256:" + "b" * 64
+            data = {"revision": revision, "image": "ghcr.io/example/aeris:sha-" + revision,
+                    "os": "linux", "architecture": "amd64", "image_id": image_id,
+                    "files": {name: database_backup.digest_file(bundle / name) for name in ("image.tar.gz", "source.tar.gz")}}
+            (bundle / "release.json").write_text(json.dumps(data))
+            evidence = {"tables": {"scenarios": "preserved"}}
+            verification = root / "backup.verified.json"
+            database_backup.private_json(verification, {"verified_at": datetime.now(timezone.utc).isoformat(),
+                "compose_project": "aeris-shared", "database": "aeris",
+                "restored_into_isolated_database": True, "evidence": evidence})
+            env_file = root / ".env.shared"
+            env_file.touch(mode=0o600)
+            argv = ["promote_release.py", "--bundle", "../incoming", "--revision", revision,
+                    "--env-file", "../.env.shared", "--backup-verification", "../backup.verified.json",
+                    "--releases", "../releases"]
+            inspected = [{"Id": image_id, "Architecture": "amd64", "Config": {"Labels": {
+                "org.opencontainers.image.revision": revision}}}]
+            previous = Path.cwd()
+            try:
+                os.chdir(maintenance)
+                with patch.object(sys, "argv", argv), patch.dict(os.environ), \
+                     patch.object(promote_release, "fingerprint", return_value=evidence), \
+                     patch.object(promote_release.subprocess, "run"), \
+                     patch.object(promote_release.subprocess, "check_output", return_value=json.dumps(inspected).encode()), \
+                     patch.object(promote_release, "urlopen", return_value=io.BytesIO(json.dumps({"revision": revision}).encode())):
+                    promote_release.main()
+            finally:
+                os.chdir(previous)
+            self.assertEqual(current.resolve(), releases / revision)
+            self.assertFalse((releases / "current").exists())
+            self.assertTrue(old.is_dir())
+
     def test_checksum_and_approved_revision_are_required_before_loading_image(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
