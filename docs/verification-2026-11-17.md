@@ -107,7 +107,7 @@ classification was applied and scanning remained enabled. Test markers are now
 generated dynamically. Subsequent PR scans passed. This history is not a claim that
 the original scanner never detected anything.
 
-Dependabot alerts and security updates were enabled and observed. GitHub reports
+Dependabot alerts and security updates were enabled and observed. GitHub states
 the saved main protection is not enforced under the current private-repository plan;
 the normal review/merge rules are team conventions. No plan or visibility change
 was used as a workaround. PR jobs receive no Azure/registry-write credentials.
@@ -120,5 +120,5 @@ practice and recording require an intentional startup.
 
 Still human work: independent code/content review, each member's own-computer
 acceptance, a roughly five-minute recording, agreed examiner access to the private
-repo, and critical assessment of the AI-assisted report. The [demo plan](demo.md)
+repo, and critical assessment of the AI-assisted technical contributions. The [demo plan](demo.md)
 is a runnable plan, not a recorded video.

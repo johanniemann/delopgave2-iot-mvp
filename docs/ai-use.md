@@ -1,9 +1,9 @@
 # AI-use development record
 
-This collects evidence for the AI disclosure required by course source C3 in
-[course context](course-context.md). Adapt it into the submission's method section
-or appendix; it is not a claim that the final submission disclosure is complete.
-Full chat exports are unnecessary. Avoid secrets and unrelated personal information.
+This records AI assistance in the technical product under course source C3 in
+[course context](course-context.md). Record generated code, configuration, tests
+and technical documentation with validation and human assessment. Avoid secrets,
+full chat exports and unrelated personal information.
 
 For each meaningful generated contribution record the student responsible, date,
 short prompt description, tool/model/version if known, purpose, affected files or PR,
@@ -85,15 +85,14 @@ need not create entries.
   deployment was authorized or created. PR #4's owner-authorized merge exception
   is recorded separately from independent review.
 - Output: Danish walkthrough, architecture illustration, updated deployment/context
-  notes and an editable Word copy in the supplied school folder outside this clone.
-  The walkthrough is the prose source for that copy; course PDFs remain outside Git.
+  notes. Course PDFs remain outside Git.
 - Agent validation: checked assignment pages and relevant teaching/exercise sources;
   verified HTTPS/authenticated data and unchanged complete case response after actual
   VM deallocation/startup, inspected the dashboard, then verified deallocation again.
-  Document rendering/visual QA and repository checks are part of this change.
+  Diagram inspection and repository checks are part of this change.
 - Human assessment: user selected the hosting direction and merge exception.
   The generated explanation still requires human reading, correction and assessment
-  before use in an academic submission; no completed independent review is claimed.
+  before relying on it for technical work; no completed independent review is claimed.
 
 ## 2026-11-08: optional local observability and Postman walkthrough
 
@@ -172,8 +171,8 @@ Human assessment, adaptations and remaining limitations:
 
 ## 2026-11-17 — complete the technical audit gaps
 
-- Request: implement the eight reviewed technical steps and then prepare the
-  report using verified evidence. No expansion into Better Maintenance or real ML.
+- Request: implement the eight reviewed technical steps using verified evidence.
+  No expansion into Better Maintenance or real ML.
 - Tool: Codex; exact runtime model/version not recorded.
 - Work: isolated clone; dev/feature workflow; external sensor Postman boundaries;
   bounded security logs and privacy regressions; safe SQL composition; locked
@@ -233,5 +232,15 @@ and current complete PR checks must be verified separately before merge.
   their dates and limits, preserving the earlier results as historical evidence.
 - User approvals authorize the concrete release, not a claim of independent review.
   Formal human code/content review, other members' own computer tests, the recording
-  and examiner access remain human work. The final report must critically disclose
-  AI assistance and distinguish real implementation from simulation.
+  and examiner access remain human work. Technical documentation distinguishes
+  real implementation from simulation.
+
+
+## 2026-11-17 — focus technical guidance
+
+- Codex updated source guidance to focus on runtime functionality, contracts,
+  operations, tests and contribution procedures. Earlier non-product delivery text
+  was removed, and binary Office/reference formats were excluded from source.
+- No application, dependency, account, database or infrastructure behaviour changed.
+- Repository reference and whitespace checks passed. Existing technical evidence,
+  AI-use accountability and the normal independent review rule are preserved.

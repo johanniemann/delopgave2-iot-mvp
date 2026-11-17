@@ -81,19 +81,19 @@ choices add a dashboard to the academic minimum; they are not new course mandate
 
 ## Relationship to Delopgave 1
 
-The final student report proposes Predictive Maintenance and Better Maintenance as
+The earlier project model proposes Predictive Maintenance and Better Maintenance as
 two logical contexts, initially deployed together with separate model responsibilities.
 That describes the broader original design; the selected prototype implements only
-the first context. Do not interpret the report as permission to add the second.
+the first context. Do not interpret that broader model as permission to add the second.
 It links wind-turbine measurements to cases, work orders and verified normal operation.
 Earlier MD notes and API examples are proposals, not implemented contracts.
 
-The report's NT-01 rule prevents work-order closure unless all required tasks are
+The broader model's NT-01 rule prevents work-order closure unless all required tasks are
 complete and the latest verification confirms normal operation for their current
 revision; changed work invalidates old verification. NH-01 proposes specialist
 suggestions, with human assignment. Preserve these meanings if that broader scope
 is later selected. Neither belongs in this prototype's implementation.
-The report also proposes durable handoffs/outbox and replay handling for a later
+The earlier model also proposes durable handoffs/outbox and replay handling for a later
 cross-context integration. Do not introduce that infrastructure for simple telemetry
 without a task that needs it. No Salesforce/Business Central integration is selected.
 
@@ -108,7 +108,7 @@ without a task that needs it. No Salesforce/Business Central integration is sele
 | Deployment | Local Compose plus shared Azure Compose/Caddy HTTPS deployment; private DB, loopback app, individual Secure-cookie accounts; actual HTTPS Postman and app/database restart verified on 2026-11-17; midnight Copenhagen shutdown saved | Other members still need to try shared access; actual scheduled stop has not been observed; release promotion is manual |
 | Local observability | Opt-in OpenTelemetry SDK and self-hosted SigNoz on each developer's computer, separate Compose projects/data; bounded HTTP fields only; no SQL/body/token export | Team learning choice selected 2026-11-08; not deployed on the small Azure VM; see [monitoring guide](observability.md) |
 | Application roles | Individual Technician/Maintenance specialist and Admin; server-side cookies, password change/reset, user administration and audit; local forward migration preserved complete saved evidence | Team requirement selected 2026-11-08; see [account guide](authentication.md). Azure migration and individual accounts verified on 2026-11-17; Johan confirmed personal login/password change; other members still supply their own acceptance |
-| Branch enforcement | feature/* -> dev -> main with PR checks and independent review as the normal team rule | GitHub reports the saved main protection is not enforced on the current private plan; actual owner-authorized exceptions are recorded without claiming independent review |
+| Branch enforcement | feature/* -> dev -> main with PR checks and independent review as the normal team rule | GitHub states the saved main protection is not enforced on the current private plan; actual owner-authorized exceptions are recorded without claiming independent review |
 
 On 2026-11-07 the owner explicitly authorized merging PR #4 after its five checks
 passed because no other group member was available. The merge records this one-off
