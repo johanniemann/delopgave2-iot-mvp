@@ -2,6 +2,14 @@
 
 Arbejdet den 6 og 7 november 2026
 
+**Historisk gennemgang:** Beskrivelserne af tokenadgang, selvindtastet reviewernavn,
+GitHub Flow og den daværende VM-version nedenfor vedrører arbejdet 6.–7. november.
+De er ikke en opsætningsvejledning til den aktuelle version. Gruppen bruger nu
+`feature/* -> dev -> main`, individuelle konti og reviewidentitet fra den indloggede
+bruger. Kontoopgraderingen på Azure blev verificeret 17. november; se
+[aktuel projektstatus](project-context.md), [kontovejledning](authentication.md)
+og [deployment](deployment.md). Afsnit 12 indeholder en senere statusopdatering.
+
 Vi har bygget en prototype, hvor en tekniker kan undersøge vindmålinger, se en mulig fejl, vurdere fremtidige risici og følge en vedligeholdelsessag. Den hedder Aeris. Man kan åbne den i en almindelig browser, men bag skærmbilledet ligger et program, en database og en server hos Microsoft Azure.
 
 Denne gennemgang forklarer arbejdet uden at forudsætte kendskab til kode, GitHub eller servere. Fagord bliver forklaret, når de optræder. Undervejs forbinder vi de konkrete valg med undervisningen. Kildernes korte navne, for eksempel A1 og C1, er samlet til sidst.

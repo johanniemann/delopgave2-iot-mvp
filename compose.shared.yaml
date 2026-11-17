@@ -3,6 +3,7 @@ services:
   app:
     environment:
       APP_MODE: shared
+      TRUSTED_PROXY_HOST: caddy
       PUBLIC_ORIGIN: https://${AERIS_HOSTNAME:?}
       ALLOWED_HOSTS: ${AERIS_HOSTNAME:?},localhost,127.0.0.1
     logging: &bounded-logs

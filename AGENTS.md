@@ -88,8 +88,13 @@ python3 scripts/smoke_test.py
 ```
 
 Use Python 3.10+ (`python` or `py -3` on Windows) for helper scripts. Docker uses
-Python 3.13 for the app. The first three commands check guidance; Docker tests use a
-dedicated PostgreSQL test DB. The smoke check needs the running app. See development
+Python 3.13 for the app. The helper suite needs Node.js 18+ for its dashboard
+JavaScript regressions; the Python helpers themselves use the standard library.
+The repository checker and whitespace check do not need Node. Running the app
+through Docker does not need a host Node installation. The helper suite checks
+guidance, browser state and operational safety; Docker tests use a dedicated
+PostgreSQL test DB. Use an explicit isolated Compose project for concurrent tests.
+The smoke check needs the running app. See development
 instructions before starting services; preserve the demo volume and existing data.
 Update real commands and application CI with behaviour changes.
 Inspect the final diff. Record changed behaviour, checks run and results, assumptions,

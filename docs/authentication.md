@@ -112,12 +112,34 @@ revokes sessions, requires a personal password change and records the recovery.
 It cannot promote a Technician. There is no email reset, MFA or external identity
 provider; these remain limits of this small prototype.
 
-Login throttles are persistent: 10 attempts per username and 30 per network peer
-per five minutes. Behind Caddy, peer limits may be shared by the whole group;
-forwarded headers are not trusted to bypass the limit. Repeated retries can block
-valid sign-ins temporarily. Session revocation applies on the next request; already
-running work is not cancelled. The HTTP-only CI proxy check does not authenticate
-with Secure cookies; HTTPS cookie behavior is separately covered by integration tests.
+## Client identity and request limits
+
+The quality-improvement candidate keeps the existing limits: 10 sign-in attempts
+per username and 30 per client IP per five minutes, plus 60 JSON writes per client
+IP per minute per app process. Shared Compose explicitly sets
+`TRUSTED_PROXY_HOST=caddy`. Caddy overwrites `X-Real-IP` with its connection's
+`remote_host`; a caller-supplied value is not forwarded as client identity.
+The application accepts that header only when its socket peer matches a fresh
+DNS lookup of the configured proxy and the header contains exactly one valid IP.
+Uvicorn's generic proxy-header handling remains disabled. Local mode has no trusted
+proxy by default, so supplied forwarding headers cannot select another quota key.
+
+If proxy DNS lookup fails, the peer does not match or the header is missing or
+invalid, the application falls back to its socket peer. This preserves the trust
+boundary but may temporarily combine clients into a shared proxy quota; investigate
+proxy/DNS configuration before repeated retries. Users behind the same public NAT
+still share an IP allowance even when the proxy configuration works. These guards
+are bounded prototype controls, not a distributed edge protection service.
+
+This candidate must pass isolated proxy tests and a selected-release promotion
+before it is described as installed. The last verified Azure release
+`0f1e9d82a2ee36f687292b3781dd7778b6283364` uses the older shared transport-peer
+limits. See [current project context](project-context.md) for release status.
+
+Session revocation applies on the next request; already running work is not
+cancelled. The HTTP-only CI proxy check does not authenticate with Secure cookies;
+HTTPS cookie behavior is separately covered by integration tests. Account identity,
+audit history and private backups follow the [data-handling policy](data-handling.md).
 
 ## Earlier verification on the local Mac — 2026-11-08
 

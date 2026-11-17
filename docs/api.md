@@ -4,6 +4,12 @@ All records are synthetic. Predictive Maintenance only; no Better Maintenance se
 The UI and `/api` share one origin. OpenAPI is at `/docs`. IDs are UUIDs except
 readable incident/forecast/case IDs. Times use timezone-aware ISO 8601; storage is UTC.
 
+OpenAPI declares the actual domain response objects, operation-specific mutation
+receipts, nullable fields and safe error envelope. Authenticated write operations
+also show their required `X-CSRF-Token` header; login issues that token with the
+session cookie. Runtime response validation retains the existing ISO offset form
+and complete persisted evidence, including explicit nulls.
+
 ## Demo rule and case gate
 
 `wind_speed`, `m/s`: a usable reading **strictly above 28.0** opens a current-fault
@@ -29,6 +35,13 @@ all forecast risks were rejected. Forecast numbers are fixed illustrative fixtur
 | `PUT /api/scenarios/{id}/review` | Record a reviewer, note and Accepted/Rejected decision for every risk |
 | `POST /api/scenarios/{id}/case` | Create exactly one case once both gates hold |
 | `POST /api/cases/{id}/outcomes` | Record a labelled simulated external result; resolve only if all work complete and verification Passed |
+
+The overview is a recent summary: at most 100 scenarios, 100 cases and 30 events.
+Its metrics count all persisted records. Dashboard case filters and search apply
+to those recent cases. Detail endpoints remain available for older known IDs;
+refreshing or recording an outcome preserves the selected older window. The
+window picker labels its latest 100 entries and includes an older current selection
+separately. The overview does not provide pagination or a complete archive search.
 
 Every mutation needs a UUID `request_id`. Existing-scenario mutations also need
 `expected_version` from the latest detail. A repeated identical request returns its

@@ -47,6 +47,16 @@ def require_backup(path):
             or data.get("restored_into_isolated_database") is not True
             or not timedelta(0) <= age < timedelta(hours=24)):
         raise ValueError("A recent verified restore of the shared database is required.")
+    # A successful restore is evidence only while its exact private archive remains usable.
+    name = data.get("archive")
+    if (not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*\.dump", name)
+            or not re.fullmatch(r"[a-f0-9]{64}", data.get("archive_sha256", ""))):
+        raise ValueError("Verify a named backup archive with the current maintenance tools before promotion.")
+    archive = path.parent / name
+    if archive.is_symlink() or not archive.is_file():
+        raise ValueError("The verified backup archive is missing or is not a regular file.")
+    if archive.stat().st_mode & 0o077 or digest_file(archive) != data["archive_sha256"]:
+        raise ValueError("Verified backup privacy/checksum validation failed; no deployment performed.")
     return data
 
 
