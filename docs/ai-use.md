@@ -185,3 +185,14 @@ Human assessment, adaptations and remaining limitations:
   promotion and browser acceptance will be recorded after their actual execution.
 - Human assessment: pending. A different group member has not reviewed this work
   merely because the agent implemented/tested it. No student review is invented.
+
+
+### GitGuardian incident 40194040 follow-up
+
+GitGuardian flagged the new log-privacy test's absence assertion at commit 2477572,
+line 21. Static tracing found runtime-generated credentials and fixed noncredential
+query/username markers, with no usable secret assigned at that location. The test
+now generates those markers and invalid CSRF data at runtime too, preserving all
+negative/privacy checks. This specific incident is assessed as a false positive;
+scanner-wide or test-directory exclusions are not introduced. Source-system status
+and current complete PR checks must be verified separately before merge.

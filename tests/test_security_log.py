@@ -11,20 +11,24 @@ def events(caplog):
 
 def test_login_failure_is_logged_without_credentials_or_query(client, caplog):
     password = secrets.token_urlsafe(24)
+    query_marker = secrets.token_hex(12)
+    unknown_user = "missing-" + secrets.token_hex(8)
     caller = TestClient(client.app)
-    result = caller.post("/api/auth/login?private=do-not-log", json={
-        "username": "missing-person", "password": password})
+    result = caller.post("/api/auth/login?private=" + query_marker, json={
+        "username": unknown_user, "password": password})
     assert result.status_code == 401
     event, = events(caplog)
     assert event["event"] == "login_failed" and event["route"] == "/api/auth/login"
     assert event["status"] == 401 and "time" in event
-    assert all(value not in caplog.text for value in (password, "do-not-log", "missing-person"))
+    assert password not in caplog.text
+    assert query_marker not in caplog.text
+    assert unknown_user not in caplog.text
 
 
 def test_role_and_csrf_denials_record_authenticated_actor_without_session(client, caplog):
     me = client.get("/api/auth/me").json()
     assert client.get("/api/admin/users").status_code == 403
-    assert client.post("/api/auth/logout", json={}, headers={"X-CSRF-Token": "invalid"}).status_code == 403
+    assert client.post("/api/auth/logout", json={}, headers={"X-CSRF-Token": secrets.token_urlsafe(16)}).status_code == 403
     recorded = events(caplog)
     assert len(recorded) == 2
     assert all(e["event"] == "access_denied" and e["actor_id"] == me["user"]["id"] for e in recorded)
