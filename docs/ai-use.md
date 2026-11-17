@@ -144,6 +144,20 @@ need not create entries.
 - Human assessment: pending; the PR is an access test and has not been approved
   for merge.
 
+## 2026-11-17: pull request workflow test
+
+- Student responsible: to be confirmed by the contributing group member.
+- Tool/model: Codex; exact runtime model/version not recorded in the repository.
+- Prompt/purpose: create a test pull request to verify that the GitHub connection
+  can create a branch, commit a small change and open a PR.
+- Output: this documentation-only entry on a separate test branch and draft PR.
+- Validation: inspect the PR diff and GitHub checks; results are recorded in the PR.
+  Application behaviour is unchanged.
+- Limitation: this tests the connected GitHub plugin workflow. The existing local
+  checkout is behind main and has uncommitted changes, so local Git authentication
+  and pushing are not tested.
+- Human assessment: pending; this is a workflow test awaiting human review.
+
 ## Entry template
 
 ```text
