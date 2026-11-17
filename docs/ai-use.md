@@ -209,6 +209,29 @@ and current complete PR checks must be verified separately before merge.
   reproduced the stale pointer before the fix and now verifies the shared pointer,
   no nested pointer, and preservation of the prior release. All 24 helper tests pass.
 - User approved continuing release/deployment and specifically approved the four
-  named Aeris accounts/roles plus the temporary test account. PR12 was merged by
+  named Aeris accounts/roles plus the temporary test account. PR 12 was merged by
   Denstoerste; no independent review submission is claimed. This follow-up remains
   part of the same authorized release correction.
+
+
+## 2026-11-17 — observed shared deployment and evidence documentation
+
+- Codex assisted with the approved feature->dev->main release and actual Azure
+  promotion of the CI-tested image, source/manifest/checksum verification, private
+  dump/isolated restore, forward migration and external HTTPS verification.
+- Concrete user approval named Johan/Admin, Esben/Nix/Bilal/Technician and one
+  temporary Technician test account. Tests covered forced change,403 roles/CSRF,
+  logout/revocation/reset and old bearer 401. Credentials were privately handed over;
+  the test account was deactivated. Johan confirmed personal login/password change.
+- External Newman passed 27 requests / 46 assertions. Direct SQL correlated sensor input
+  and rule events. A real app/database restart preserved all 4 old complete cases
+  and the new complete case. Fresh v1/v2 backups restored successfully on the VM;
+  the existing pre-migration off-VM copy remains. A further full export was rejected
+  by automatic approval review and was not carried out.
+- The release pointer error was observed, reproduced and corrected as recorded
+  above and in PR 16/17. Documentation is rewritten around actual deployment facts,
+  their dates and limits, preserving the earlier results as historical evidence.
+- User approvals authorize the concrete release, not a claim of independent review.
+  Formal human code/content review, other members' own computer tests, the recording
+  and examiner access remain human work. The final report must critically disclose
+  AI assistance and distinguish real implementation from simulation.

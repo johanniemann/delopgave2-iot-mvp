@@ -47,7 +47,7 @@ an explicit privileged operation, not a public reset endpoint.
 
 Migration 002 adds account/session/throttle/audit tables; it does not alter existing
 case data. It must be applied forward before the new code serves authenticated data.
-The existing Azure release is unchanged until a separately authorized promotion.
+The authorized Azure forward migration was completed on 2026-11-17; existing case evidence was preserved. See [verified release evidence](verification-2026-11-17.md).
 
 ## Start locally
 
@@ -83,9 +83,10 @@ credential file, copy passwords into Git or reuse an Azure/GitHub password here.
 
 ## Shared deployment and host recovery
 
-Promoting this change is a separate release decision; it has not been deployed to
-Azure. Before promotion back up PostgreSQL and use the established stable Compose
-project/volume. Migration 002 adds only new tables and a recorded schema version;
+The user authorized the shared promotion and specifically approved Johan/Admin,
+Esben/Nix/Bilal/Technician and one temporary Technician test account. The shared
+release was migrated on 2026-11-17 with a verified restore and the established
+stable Compose project/volume. Before every later promotion take and verify a backup. Migration 002 adds only new tables and a recorded schema version;
 a rollback of application code does not remove those tables or reactivate the old
 shared token. Treat any rollback that restores token-only access as an explicit
 access-policy change, not an automatic recovery action.
@@ -118,7 +119,7 @@ valid sign-ins temporarily. Session revocation applies on the next request; alre
 running work is not cancelled. The HTTP-only CI proxy check does not authenticate
 with Secure cookies; HTTPS cookie behavior is separately covered by integration tests.
 
-## Verification on the local Mac
+## Earlier verification on the local Mac — 2026-11-08
 
 - **70 application tests passed** against real PostgreSQL: direct role denial,
   forced password change, CSRF, expiry, logout, revocation, resets, concurrent admin
@@ -140,10 +141,9 @@ with Secure cookies; HTTPS cookie behavior is separately covered by integration 
   are absent from exported traces/metrics. Private credential files are excluded
   from Git and Docker build context.
 
-This is local Mac validation. The new release has not been tested on the VM, from
-another member's computer or on Windows. It has no MFA, external identity service,
+This is local Mac validation. These earlier results did not establish VM, another member's computer or Windows behaviour. It has no MFA, external identity service,
 email recovery or distributed IP-aware edge limiter. These limits do not create a
-third role or weaken API checks. The existing shared release remains unchanged.
+third role or weaken API checks. Shared validation on 2026-11-17 is recorded below.
 
 See [course context](course-context.md): E1/E2/E3 and C1/C2 support
 access control, secret handling, safe failures and tests; two roles are a team choice.
@@ -153,3 +153,22 @@ Authoritative references checked 2026-11-08:
 [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html),
 [password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html),
 and [argon2-cffi](https://argon2-cffi.readthedocs.io/en/stable/howto.html).
+
+
+## Shared verification — 2026-11-17
+
+Actual external HTTPS calls verified the selected revision, valid certificate,
+anonymous/old-bearer 401, temporary-password gate, Technician/admin 403, CSRF 403,
+logout 401, session revocation after an account edit, and temporary-password reset.
+All four pre-existing complete case responses matched their v1 baseline. The full
+27-request / 46-assertion Postman workflow passed against the VM, and an actual
+app/database restart preserved the original cases and the new complete case.
+
+The temporary test account was deactivated. The four named person accounts are
+active and were handed over through an ignored owner-only credentials file. Johan
+subsequently confirmed that he signed in and chose his own password. That personal
+password is not known to the agent; later releases must preserve it. Other members
+still need to use their own credentials and record their observations. No agent
+assertion supplies their acceptance or an independent code review.
+
+See [release evidence and remaining limits](verification-2026-11-17.md).

@@ -37,8 +37,8 @@ The initial database contains clearly labelled Seeded demo history: one pending
 forecast and two sample cases. This is illustrative history, not real human review.
 Run the dashboard/database locally for development, or open the protected
 [shared Azure dashboard](https://aeris-studiegruppe-linux.swedencentral.cloudapp.azure.com/)
-when the VM is deliberately started. Its earlier installed release still uses the
-shared token until the individual-account release is promoted. The VM shuts down at **00:00 Copenhagen time** and
+when the VM is deliberately started. It uses individual Admin/Technician accounts and requires a personal password
+change on first login. The old shared token is no longer accepted. The VM shuts down at **00:00 Copenhagen time** and
 must be started manually for the next session. See [deployment and verification](docs/deployment.md).
 
 ```sh
@@ -77,7 +77,8 @@ push/manual runs retain a private tested-image/source artifact; trusted dev/main
 pushes also publish that same image to GHCR. Azure promotion remains explicit and
 requires verified backup evidence. See [release and recovery](docs/release.md).
 
-Use the [five-minute demo plan](docs/demo.md) to demonstrate external sensor input,
+See [verified release evidence](docs/verification-2026-11-17.md) for actual tests,
+backup/recovery and remaining human acceptance. Use the [five-minute demo plan](docs/demo.md) to demonstrate external sensor input,
 SQL persistence and the domain flow. `/health` identifies an image's source revision.
 
 ## Shared project guidance
