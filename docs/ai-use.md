@@ -196,3 +196,19 @@ now generates those markers and invalid CSRF data at runtime too, preserving all
 negative/privacy checks. This specific incident is assessed as a false positive;
 scanner-wide or test-directory exclusions are not introduced. Source-system status
 and current complete PR checks must be verified separately before merge.
+
+
+## 2026-11-17 — correct release pointer after real Azure verification
+
+- Codex found that resolving the relative `--releases` argument after changing the
+  working directory updated `releases/current` instead of the shared `current`.
+  The tested image and database were correct; the authoritative pointer was stale.
+- Resolve the releases directory once before `chdir`, then reuse that absolute path.
+- A regression test drives the full promotion entry point with relative arguments,
+  real temporary archives/directories and mocked Docker/network boundaries. It
+  reproduced the stale pointer before the fix and now verifies the shared pointer,
+  no nested pointer, and preservation of the prior release. All 24 helper tests pass.
+- User approved continuing release/deployment and specifically approved the four
+  named Aeris accounts/roles plus the temporary test account. PR12 was merged by
+  Denstoerste; no independent review submission is claimed. This follow-up remains
+  part of the same authorized release correction.
