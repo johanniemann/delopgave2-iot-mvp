@@ -208,6 +208,8 @@ def main(argv=None):
     else:
         print(json.dumps(proof, indent=2))
     total = sum(len(client["results"]) for client in proof["clients"])
+    if "error" in proof:
+        print("Proxy boundary setup/check failed:", proof["error"])
     print(f"Proxy boundary: {'PASS' if proof['passed'] else 'FAIL'} ({total} requests, two isolated clients)")
     return 0 if proof["passed"] else 1
 

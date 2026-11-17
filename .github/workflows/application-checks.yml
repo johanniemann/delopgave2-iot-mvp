@@ -61,7 +61,15 @@ jobs:
           run --rm --no-deps caddy caddy validate
           --config /etc/caddy/Caddyfile --adapter caddyfile
       - name: Verify proxy overwrites forged client identity headers
-        run: python3 scripts/test_proxy_header_boundary.py --output .codex-log/caddy-header-proof.json
+        run: |
+          python3 - <<'PY'
+          import re
+          import subprocess
+          from pathlib import Path
+          image = re.search(r"^FROM\s+(python:\S+@sha256:[0-9a-f]{64})\b", Path("Dockerfile").read_text(), re.MULTILINE).group(1)
+          subprocess.run(["docker", "pull", image], check=True)
+          PY
+          python3 scripts/test_proxy_header_boundary.py --output .codex-log/caddy-header-proof.json
       - name: Verify shared mode requires authentication
         env:
           AERIS_HOSTNAME: demo.example.com

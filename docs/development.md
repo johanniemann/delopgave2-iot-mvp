@@ -182,8 +182,11 @@ an internal Docker network, without host ports or database volumes:
 python3 scripts/test_proxy_header_boundary.py --output .codex-log/caddy-header-proof.json
 ```
 
-It requires the pinned Python and Caddy images already present (normal app build
-and the CI Caddy validation prepare them). It checks 16 requests with forged or
+It requires the pinned Python and Caddy images already present. Pull the exact
+base reference from Dockerfile before the first run; a BuildKit app build alone
+does not guarantee that base image is available to `docker image inspect`. CI
+explicitly pulls that pinned reference and validates/pulls Caddy first.
+The check sends 16 requests with forged or
 duplicate headers and removes only its own temporary containers/network. CI runs
 this check after Caddy configuration validation; importing the helper does not
 start Docker.
