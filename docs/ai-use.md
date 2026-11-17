@@ -268,6 +268,11 @@ and current complete PR checks must be verified separately before merge.
   42 helper tests. `docker compose --profile test run --rm --build tests` passed
   99 application tests against the isolated `aeris-quality-20261117` test database.
   Repository reference checks and `git diff --check` also passed.
+  The actual pinned Caddy proxy passed 16 forged/duplicate-header requests from
+  two isolated client containers. Live local HTTP smoke, Newman 27 requests/46
+  assertions and a private backup/isolated restore passed. The complete selected
+  case response stayed identical after app/database restart. Medium/high Bandit
+  gating and the locked runtime dependency audit passed without advisory ignores.
   These checks do not establish a shared deployment or complete browser acceptance.
   Earlier test counts belong to their dated baseline, not this candidate.
 - Human assessment: pending independent group review and other members' own-computer

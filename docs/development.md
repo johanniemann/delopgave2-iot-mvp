@@ -86,7 +86,7 @@ The [local observability guide](observability.md) starts an isolated copy on por
 8766 plus SigNoz on port 3301. It has separate data from the normal port-8765 demo
 and stays off in the default/shared configuration. Use its helper to stop it when
 finished. The [Postman guide](postman.md) demonstrates the complete case flow with
-17 requests and 28 assertions. Neither workflow starts or deploys to Azure.
+27 requests and 46 assertions. Neither workflow starts or deploys to Azure.
 
 ## Validation
 
@@ -169,7 +169,21 @@ CI also takes a private PostgreSQL dump, restores it into a generated disposable
 database and compares saved domain/account evidence. See [release and recovery](release.md)
 for the same operation on the selected environment and the image-promotion process.
 
-Current local evidence: 73 application tests, expanded Newman 27 requests/46
-assertions, HTTP smoke and a real backup/restore have passed on 2026-11-17. The
-release helper safety tests are recorded separately when run. This is not Azure
-promotion or another person's review.
+Current candidate evidence on 2026-11-17: 99 application tests, 42 helper tests,
+Newman 27 requests/46 assertions, HTTP smoke and a real backup/restore have passed.
+Full case evidence remained identical after app/database restart. The installed
+Azure release is recorded separately; these results do not establish promotion
+or another person's review.
+
+The opt-in proxy integration check runs the pinned Caddy image and two clients on
+an internal Docker network, without host ports or database volumes:
+
+```sh
+python3 scripts/test_proxy_header_boundary.py --output .codex-log/caddy-header-proof.json
+```
+
+It requires the pinned Python and Caddy images already present (normal app build
+and the CI Caddy validation prepare them). It checks 16 requests with forged or
+duplicate headers and removes only its own temporary containers/network. CI runs
+this check after Caddy configuration validation; importing the helper does not
+start Docker.
