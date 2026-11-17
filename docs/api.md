@@ -60,3 +60,17 @@ required password change, missing/invalid CSRF or foreign origin, 404 unknown re
 409 state/idempotency/version conflict, 411 length required, 413 oversized body,
 415 non-JSON write, 422 invalid fields, 429 rate limit, 503 database unavailable.
 Validation responses omit request bodies; database/internal details are not returned.
+
+
+## Operations and security evidence
+
+`GET /health` also returns `revision`: the exact source commit embedded in a
+release image, or `local` for an unlabelled developer build. It exposes no account
+or deployment credentials. Compare it with the selected release manifest.
+
+Rejected API requests with status 401, 403 or 429 produce a bounded JSON security
+log event on container stderr. Fields are UTC time, event, method, matched route
+template, status and an authenticated account UUID when available. Early guard
+rejections use `/api/unmatched`. No username, peer IP, raw URL/query, body, cookie,
+password or CSRF token is copied. These operational events complement the domain
+and account-administration history; they do not replace it.

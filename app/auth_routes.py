@@ -16,6 +16,7 @@ def build_auth(settings):
 
     def current(request: Request, token=Depends(cookie)):
         session = request.app.state.accounts.session(token)
+        request.state.actor_id = str(session["user"]["id"])
         if request.method not in safe_methods:
             csrf = request.headers.get("x-csrf-token", "")
             if not hmac.compare_digest(csrf.encode(), session["csrf_token"].encode()):

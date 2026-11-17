@@ -97,7 +97,8 @@ remaining limitations and follow-up work. Never label an unrun check as passed.
 
 ## Collaborate and protect the work
 
-- Work on a short task branch and propose changes through a PR; a different group
+- Create `feature/*` from `dev`, propose changes through a PR to `dev`, and promote
+  ready integration through a separate `dev` -> `main` release PR. A different group
   member reviews before merge. Do not self-approve or claim another person's review.
 - Commit/push only when authorized by the task. Do not merge, deploy, provision paid
   resources, change access/branch rules, delete data, rewrite shared history or expose

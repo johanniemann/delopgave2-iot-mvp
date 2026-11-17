@@ -65,6 +65,21 @@ database and never clear demo data. On Windows use `python` or `py -3`.
 GitHub Actions runs guidance checks, actual PostgreSQL tests, image builds and a
 fresh local Docker deployment/HTTP smoke check. No feature branch deploys to Azure.
 
+## Release and verification
+
+The team uses `feature/*` from `dev`, reviewed integration to `dev`, and a separate
+release PR from `dev` to stable `main`. [Contribution rules](CONTRIBUTING.md) explain
+the current hosting enforcement limits.
+
+Application checks include a locked SAST/dependency gate, real PostgreSQL tests,
+HTTP/Postman sensor and case flows and an actual isolated backup restore. Successful
+push/manual runs retain a private tested-image/source artifact; trusted dev/main
+pushes also publish that same image to GHCR. Azure promotion remains explicit and
+requires verified backup evidence. See [release and recovery](docs/release.md).
+
+Use the [five-minute demo plan](docs/demo.md) to demonstrate external sensor input,
+SQL persistence and the domain flow. `/health` identifies an image's source revision.
+
 ## Shared project guidance
 
 - [Projektet forklaret på dansk uden tekniske forkundskaber](docs/project-walkthrough-da.md)

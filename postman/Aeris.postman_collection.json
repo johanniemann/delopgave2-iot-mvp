@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Aeris Predictive Maintenance walkthrough",
-    "description": "Authenticated synthetic Predictive Maintenance walkthrough. Sign in as Technician, retain the cookie jar, use the session CSRF token, demonstrate the complete saved case flow, verify admin denial and sign out. Credentials are runtime-only values or Postman Local Vault references. See docs/postman.md. Existing data is preserved.",
+    "description": "Authenticated synthetic Predictive Maintenance walkthrough. Sign in as Technician, retain the cookie jar, use the session CSRF token, demonstrate the complete saved case flow, verify admin denial and sign out. Credentials are runtime-only values or Postman Local Vault references. See docs/postman.md. Existing data is preserved. Includes a separate real HTTP sensor-input walkthrough: equality, exceedance, invalid units, retained unusable readings and persisted incident/event correlation.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -494,6 +494,370 @@
               "}"
             ]
           }
+        }
+      ]
+    },
+    {
+      "name": "External sensor input and rule boundaries",
+      "item": [
+        {
+          "name": "S01 Open an empty sensor window",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/scenarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"kind\": \"empty\",\n  \"prepare\": false,\n  \"title\": \"Postman external sensor boundary test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code !== 201) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set(\"sensor_scenario_id\", data.scenario_id);",
+                  "pm.collectionVariables.set(\"sensor_version\", data.version);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "S02 Send the exact 28.0 m/s boundary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/scenarios/{{sensor_scenario_id}}/readings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{sensor_version}},\n  \"measured_at\": \"2026-11-17T10:00:00Z\",\n  \"value\": 28.0,\n  \"unit\": \"m/s\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code !== 201) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set(\"sensor_version\", data.version);",
+                  "pm.test(\"Boundary reading is usable\", () => pm.expect(data.quality).to.eql(\"Usable\"));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "S03 Assess the equality boundary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/scenarios/{{sensor_scenario_id}}/assess",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{sensor_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set(\"sensor_version\", data.version);",
+                  "pm.test(\"Equality does not trigger an incident\", () => pm.expect(data.incident_id).to.eql(null));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "S04 Verify input and no-fault event are persisted",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/scenarios/{{sensor_scenario_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Exact boundary and assessment fact persisted\", () => { pm.expect(data.readings.length).to.eql(1); pm.expect(data.readings[0].value).to.eql(28); pm.expect(data.incident).to.eql(null); pm.expect(data.events.some(e => e.name === \"Current Faults Assessed\" && e.payload.fault_detected === false)).to.eql(true); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "S05 Open a second independent window",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/scenarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"kind\": \"empty\",\n  \"prepare\": false,\n  \"title\": \"Postman external sensor boundary test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code !== 201) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set(\"sensor_scenario_id\", data.scenario_id);",
+                  "pm.collectionVariables.set(\"sensor_version\", data.version);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "S06 Reject an unsupported sensor unit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/scenarios/{{sensor_scenario_id}}/readings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{sensor_version}},\n  \"measured_at\": \"2026-11-17T10:00:00Z\",\n  \"value\": 28.1,\n  \"unit\": \"km/h\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+                  "if (pm.response.code !== 422) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Unsupported unit is rejected\", () => pm.expect(data.error.code).to.eql(\"INVALID_INPUT\"));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "S07 Retain out-of-range input as Invalid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/scenarios/{{sensor_scenario_id}}/readings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{sensor_version}},\n  \"measured_at\": \"2026-11-17T10:00:00Z\",\n  \"value\": 101,\n  \"unit\": \"m/s\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code !== 201) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set(\"sensor_version\", data.version);",
+                  "pm.test(\"Invalid evidence is labelled\", () => pm.expect(data.quality).to.eql(\"Invalid\"));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "S08 Send 28.1 m/s from the external caller",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/scenarios/{{sensor_scenario_id}}/readings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{sensor_version}},\n  \"measured_at\": \"2026-11-17T10:00:00Z\",\n  \"value\": 28.1,\n  \"unit\": \"m/s\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code !== 201) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set(\"sensor_version\", data.version);",
+                  "pm.test(\"Above-boundary input is usable\", () => pm.expect(data.quality).to.eql(\"Usable\"));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "S09 Assess and create the incident",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/scenarios/{{sensor_scenario_id}}/assess",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": \"{{request_id}}\",\n  \"expected_version\": {{sensor_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set(\"sensor_version\", data.version);",
+                  "pm.test(\"Above boundary opens an incident\", () => pm.expect(data.incident_id).to.be.a(\"string\"));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "S10 Verify correlated input rule output and events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/scenarios/{{sensor_scenario_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "{",
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code !== 200) pm.execution.setNextRequest(null);",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Only usable input triggers the saved incident\", () => { pm.expect(data.readings.length).to.eql(2); pm.expect(data.readings.filter(r => r.quality === \"Invalid\").length).to.eql(1); pm.expect(data.incident.peak).to.eql(28.1); pm.expect(data.incident.threshold).to.eql(28); pm.expect(data.incident.evidence.length).to.eql(1); pm.expect(data.events.filter(e => e.name === \"Sensor Readings Recorded\").length).to.eql(3); pm.expect(data.events.filter(e => e.name === \"Fault Incident Opened\").length).to.eql(1); });",
+                  "}"
+                ]
+              }
+            }
+          ]
         }
       ]
     },

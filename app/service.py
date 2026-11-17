@@ -4,6 +4,7 @@ import math
 from uuid import UUID, NAMESPACE_URL, uuid4, uuid5
 
 from psycopg.types.json import Jsonb
+from psycopg import sql
 
 from .domain import (DEMO_THRESHOLD, MODEL_VERSION, DomainError, current_fault,
                      require_case_gate, resolves_case, simulated_risks)
@@ -226,7 +227,8 @@ class Maintenance:
             result = {"scenario": scenario, "readings": self._readings(conn, scenario_id)}
             for table, key in (("incidents", "incident"), ("forecasts", "forecast"), ("cases", "case")):
                 # table names are closed constants, never supplied by a caller.
-                result[key] = conn.execute(f"SELECT * FROM aeris.{table} WHERE scenario_id=%s", (scenario_id,)).fetchone()
+                query = sql.SQL("SELECT * FROM aeris.{} WHERE scenario_id=%s").format(sql.Identifier(table))
+                result[key] = conn.execute(query, (scenario_id,)).fetchone()
             result["events"] = conn.execute("SELECT * FROM aeris.events WHERE scenario_id=%s ORDER BY position", (scenario_id,)).fetchall()
             result["outcomes"] = [] if not result["case"] else conn.execute("SELECT * FROM aeris.outcomes WHERE case_id=%s ORDER BY created_at,id", (result["case"]["id"],)).fetchall()
             return result

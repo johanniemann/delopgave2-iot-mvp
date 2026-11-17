@@ -1,21 +1,29 @@
 # Working together
 
-## One task, one short branch
+## Branches: feature -> dev -> main
 
-Start with an issue or a short task description containing intended behaviour and
-observable acceptance examples. Inspect the existing diff before editing. From a
-clean main checkout, the normal sequence is:
+The team selected this strategy on 2026-11-17, including for the exam project:
+
+- `main`: stable release/production code.
+- `dev`: integrated development and validation.
+- `feature/*`: individual or focused task development, created from `dev`.
+
+Inspect your working tree first and preserve unfinished work. With a clean checkout:
 
 ```sh
-git switch main
-git pull --ff-only
+git switch dev
+git pull --ff-only origin dev
 git switch -c feature/short-task-name
 ```
 
-Use `fix/`, `docs/` or `chore/` for the corresponding work. Keep branches short-lived
-and focused on a task. This is the setup's GitHub Flow convention, not a course
-requirement. Existing work stays on its branch; do not reset or discard it to run
-these commands. No permanent per-person branch or `develop` branch is needed now.
+Push ongoing work to the feature branch, open a PR **to `dev`**, obtain another
+member's review, then merge after the required checks pass. When integration is
+ready for release, open a separate **`dev` -> `main` PR**. Release the tested image
+for that approved commit. See [release and recovery](docs/release.md).
+
+Names such as `feature/johan`, `feature/esben`, `feature/nix` and `feature/bilal`
+match the team's diagram. Agree task ownership before sharing a branch; a focused
+suffix is useful when one person has multiple tasks. No direct development on main.
 
 ## A change from request to review
 
@@ -27,14 +35,14 @@ these commands. No permanent per-person branch or `develop` branch is needed now
    for docs-only changes, use repository checks and review accuracy manually.
 4. Inspect `git diff` and stage only the intended files. Commit a descriptive change
    (for example, `fix: reject negative sensor readings`). Commit saves locally.
-5. Push your task branch and open a PR to `main` when authorized. Push sends commits;
+5. Push your task branch and open a PR to `dev` when authorized. Push sends commits;
    the PR proposes integrating them. Include acceptance evidence and AI-use details.
 6. A different group member reviews the code, meaning and test results. Resolve
    feedback; reassess approval after substantive changes. The author cannot supply
    an independent review with their own agent.
 7. After human approval and successful applicable checks, an authorized person merges
    (prefer squash for one focused change). Delete the completed branch, then update
-   local main with `git pull --ff-only` before the next task.
+   local dev with `git pull --ff-only origin dev` before the next task.
 
 Current setup checks, from the repo root (Git and Python 3.10+, standard library only):
 
@@ -54,8 +62,10 @@ guidance-check pass alone is not an API test or deployment result.
 
 The intended main-branch guardrails are PRs, one other member's approval, successful
 required checks, resolved conversations, and no force-push or deletion of main.
-These are **team conventions until configured and verified in GitHub**; this setup
-does not modify hosting access, billing, rulesets or branch protection. Private-repo
+On 2026-11-17 GitHub explicitly reported that the saved main rule is not enforced
+under the current private-repository plan. These remain **team review/merge rules**
+until effective hosting enforcement is available and verified. Do not change plan,
+visibility or access as an implicit workaround. Private-repo
 rule enforcement depends on the owner's GitHub plan. Do not claim rules are active
 because a Markdown file describes them. No agent should bypass a failing check.
 

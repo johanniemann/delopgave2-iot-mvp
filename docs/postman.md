@@ -1,7 +1,6 @@
 # Demonstrate the authenticated API with Postman
 
-The [collection](../postman/Aeris.postman_collection.json) contains **17 numbered
-requests and 28 assertions**. It signs in as a Technician, demonstrates the complete
+The [collection](../postman/Aeris.postman_collection.json) contains **27 requests and 46 assertions**. It signs in as a Technician, demonstrates the complete
 Predictive Maintenance flow, verifies that user administration returns HTTP 403,
 signs out and verifies HTTP 401. It creates a new synthetic scenario each run and
 preserves all existing cases. It has no reset/delete request or committed credential.
@@ -18,7 +17,7 @@ preserves all existing cases. It has no reset/delete request or committed creden
    `{{vault:aeris-password}}` in the login request's password value, replacing the
    `{{login_password}}` placeholder locally. Do not commit/export the actual value
    or put it in a synchronized environment. Each member uses their own account.
-4. Run all **17 requests in order**, one iteration. Keep the cookie jar enabled.
+4. Run all **27 requests in order**, one iteration. Keep the cookie jar enabled.
    The login saves a transient CSRF token for subsequent writes; the session cookie
    is HttpOnly. The collection remains `noauth`: it now uses cookies, not Bearer.
 5. Request 04 deliberately expects HTTP 409 until forecast review. Requests 09-12
@@ -79,3 +78,22 @@ Official references checked 2026-11-08:
 [Local Vault](https://learning.postman.com/docs/use/postman-vault/postman-vault-key/),
 [Collection Runner](https://learning.postman.com/docs/tests-and-scripts/running-collections/intro-to-collection-runs),
 and [Newman](https://github.com/postmanlabs/newman).
+
+
+## External sensor demonstration (added 2026-11-17)
+
+After request 13, the S01-S10 folder sends real HTTP sensor inputs into two empty
+windows. In the first, 28.0 m/s is usable and does not open an incident. In the
+second, km/h is rejected with 422, 101 m/s is retained as Invalid, and 28.1 m/s
+opens an incident linked only to the usable reading. The collection verifies the
+persisted readings, incident evidence and event facts. The original case flow and
+its saved case variables are preserved.
+
+Copy `sensor_scenario_id` from the collection's variables and inspect the same
+rows using the internal database connection described in [the demo guide](demo.md).
+Never open PostgreSQL publicly for the demonstration. Assessment freezes each
+window, so equality/exceedance tests use different scenarios.
+
+The expanded collection passed locally on 2026-11-17: 27 requests, 46 assertions,
+zero failures against real FastAPI/PostgreSQL. Historical counts above describe
+the earlier collection, not the current request total.
