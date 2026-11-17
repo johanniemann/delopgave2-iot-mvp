@@ -12,6 +12,7 @@ from argon2 import PasswordHasher, Type
 from argon2.exceptions import VerificationError, InvalidHashError
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError, field_validator
 from psycopg.errors import UniqueViolation
+from psycopg import sql
 from psycopg.types.json import Jsonb
 
 from .domain import DomainError
@@ -169,11 +170,11 @@ class Accounts:
 
     def list_users(self):
         with self.pool.connection() as conn:
-            return conn.execute(f"SELECT {PUBLIC} FROM aeris.users ORDER BY active DESC,display_name,username").fetchall()
+            return conn.execute(sql.SQL("SELECT {} FROM aeris.users ORDER BY active DESC,display_name,username").format(sql.SQL(PUBLIC))).fetchall()
 
     def _insert(self, conn, command, temporary=True):
-        return conn.execute(f"""INSERT INTO aeris.users(id,username,display_name,role,password_hash,must_change_password)
-            VALUES (%s,%s,%s,%s,%s,%s) RETURNING {PUBLIC}""",
+        return conn.execute(sql.SQL("""INSERT INTO aeris.users(id,username,display_name,role,password_hash,must_change_password)
+            VALUES (%s,%s,%s,%s,%s,%s) RETURNING {}""").format(sql.SQL(PUBLIC)),
             (uuid4(), command.username, command.display_name, command.role,
              PASSWORDS.hash(command.password.get_secret_value()), temporary)).fetchone()
 
@@ -206,8 +207,8 @@ class Accounts:
                     raise DomainError("LAST_ADMIN", "Keep at least one active administrator.")
             if actor == user_id and (not command.active or command.role != "admin"):
                 raise DomainError("SELF_PROTECTED", "Another administrator must change your role or deactivate you.")
-            row = conn.execute(f"""UPDATE aeris.users SET display_name=%s,role=%s,active=%s,
-                version=version+1,updated_at=now() WHERE id=%s RETURNING {PUBLIC}""",
+            row = conn.execute(sql.SQL("""UPDATE aeris.users SET display_name=%s,role=%s,active=%s,
+                version=version+1,updated_at=now() WHERE id=%s RETURNING {}""").format(sql.SQL(PUBLIC)),
                 (command.display_name, command.role, command.active, user_id)).fetchone()
             # Revoke for identity edits too: no stale reviewer display identity.
             conn.execute("DELETE FROM aeris.sessions WHERE user_id=%s", (user_id,))

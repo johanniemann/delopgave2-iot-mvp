@@ -128,3 +128,21 @@ for bootstrap and migration before release. Avoid exposing local HTTP mode publi
 The developer's Mac has called the VM's real API over authenticated HTTPS and used
 the public dashboard. Other teammates should still try it from their own computers;
 an in-process test alone is not evidence of that access.
+
+
+## Security and release checks (2026-11-17)
+
+With uv 0.9.27 available, run `python3 scripts/security_checks.py`. The security
+extra is locked in uv.lock and is not installed into the runtime image. The gate
+blocks medium/high Bandit findings with medium/high confidence and any known
+runtime dependency advisory returned by pip-audit. An unavailable audit service
+fails the gate; there are no blanket vulnerability ignores.
+
+CI also takes a private PostgreSQL dump, restores it into a generated disposable
+database and compares saved domain/account evidence. See [release and recovery](release.md)
+for the same operation on the selected environment and the image-promotion process.
+
+Current local evidence: 73 application tests, expanded Newman 27 requests/46
+assertions, HTTP smoke and a real backup/restore have passed on 2026-11-17. The
+release helper safety tests are recorded separately when run. This is not Azure
+promotion or another person's review.

@@ -168,3 +168,20 @@ Affected files, commit or PR:
 Validation evidence:
 Human assessment, adaptations and remaining limitations:
 ```
+
+
+## 2026-11-17 — complete the technical audit gaps
+
+- Request: implement the eight reviewed technical steps and then prepare the
+  report using verified evidence. No expansion into Better Maintenance or real ML.
+- Tool: Codex; exact runtime model/version not recorded.
+- Work: isolated clone; dev/feature workflow; external sensor Postman boundaries;
+  bounded security logs and privacy regressions; safe SQL composition; locked
+  Bandit/pip-audit gate; tested-image artifact/registry and guarded promotion;
+  private pg_dump with actual isolated restore/content comparison; release/demo docs.
+- Validation so far: 73 real PostgreSQL app tests; 23 helper/safety tests; Newman
+  27 requests/46 assertions, zero failures; HTTP smoke; real local dump/restore;
+  medium/high Bandit gate and runtime dependency audit passed. Current CI, shared
+  promotion and browser acceptance will be recorded after their actual execution.
+- Human assessment: pending. A different group member has not reviewed this work
+  merely because the agent implemented/tested it. No student review is invented.

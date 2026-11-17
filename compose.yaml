@@ -20,6 +20,8 @@ services:
     build:
       context: .
       target: runtime
+      args:
+        APP_REVISION: ${APP_REVISION:-local}
     environment:
       DATABASE_URL: postgresql://prototype:${POSTGRES_PASSWORD}@db:5432/aeris
       APP_MODE: ${APP_MODE:-local}
