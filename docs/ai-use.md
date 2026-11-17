@@ -1,9 +1,9 @@
 # AI-use development record
 
-This collects evidence for the AI disclosure required by course source C3 in
-[course context](course-context.md). Adapt it into the submission's method section
-or appendix; it is not a claim that the final submission disclosure is complete.
-Full chat exports are unnecessary. Avoid secrets and unrelated personal information.
+This records AI assistance in the technical product under course source C3 in
+[course context](course-context.md). Record generated code, configuration, tests
+and technical documentation with validation and human assessment. Avoid secrets,
+full chat exports and unrelated personal information.
 
 For each meaningful generated contribution record the student responsible, date,
 short prompt description, tool/model/version if known, purpose, affected files or PR,
@@ -85,15 +85,14 @@ need not create entries.
   deployment was authorized or created. PR #4's owner-authorized merge exception
   is recorded separately from independent review.
 - Output: Danish walkthrough, architecture illustration, updated deployment/context
-  notes and an editable Word copy in the supplied school folder outside this clone.
-  The walkthrough is the prose source for that copy; course PDFs remain outside Git.
+  notes. Course PDFs remain outside Git.
 - Agent validation: checked assignment pages and relevant teaching/exercise sources;
   verified HTTPS/authenticated data and unchanged complete case response after actual
   VM deallocation/startup, inspected the dashboard, then verified deallocation again.
-  Document rendering/visual QA and repository checks are part of this change.
+  Diagram inspection and repository checks are part of this change.
 - Human assessment: user selected the hosting direction and merge exception.
   The generated explanation still requires human reading, correction and assessment
-  before use in an academic submission; no completed independent review is claimed.
+  before relying on it for technical work; no completed independent review is claimed.
 
 ## 2026-11-08: optional local observability and Postman walkthrough
 
@@ -172,8 +171,8 @@ Human assessment, adaptations and remaining limitations:
 
 ## 2026-11-17 — complete the technical audit gaps
 
-- Request: implement the eight reviewed technical steps and then prepare the
-  report using verified evidence. No expansion into Better Maintenance or real ML.
+- Request: implement the eight reviewed technical steps using verified evidence.
+  No expansion into Better Maintenance or real ML.
 - Tool: Codex; exact runtime model/version not recorded.
 - Work: isolated clone; dev/feature workflow; external sensor Postman boundaries;
   bounded security logs and privacy regressions; safe SQL composition; locked
@@ -196,3 +195,87 @@ now generates those markers and invalid CSRF data at runtime too, preserving all
 negative/privacy checks. This specific incident is assessed as a false positive;
 scanner-wide or test-directory exclusions are not introduced. Source-system status
 and current complete PR checks must be verified separately before merge.
+
+
+## 2026-11-17 — correct release pointer after real Azure verification
+
+- Codex found that resolving the relative `--releases` argument after changing the
+  working directory updated `releases/current` instead of the shared `current`.
+  The tested image and database were correct; the authoritative pointer was stale.
+- Resolve the releases directory once before `chdir`, then reuse that absolute path.
+- A regression test drives the full promotion entry point with relative arguments,
+  real temporary archives/directories and mocked Docker/network boundaries. It
+  reproduced the stale pointer before the fix and now verifies the shared pointer,
+  no nested pointer, and preservation of the prior release. All 24 helper tests pass.
+- User approved continuing release/deployment and specifically approved the four
+  named Aeris accounts/roles plus the temporary test account. PR 12 was merged by
+  Denstoerste; no independent review submission is claimed. This follow-up remains
+  part of the same authorized release correction.
+
+
+## 2026-11-17 — observed shared deployment and evidence documentation
+
+- Codex assisted with the approved feature->dev->main release and actual Azure
+  promotion of the CI-tested image, source/manifest/checksum verification, private
+  dump/isolated restore, forward migration and external HTTPS verification.
+- Concrete user approval named Johan/Admin, Esben/Nix/Bilal/Technician and one
+  temporary Technician test account. Tests covered forced change,403 roles/CSRF,
+  logout/revocation/reset and old bearer 401. Credentials were privately handed over;
+  the test account was deactivated. Johan confirmed personal login/password change.
+- External Newman passed 27 requests / 46 assertions. Direct SQL correlated sensor input
+  and rule events. A real app/database restart preserved all 4 old complete cases
+  and the new complete case. Fresh v1/v2 backups restored successfully on the VM;
+  the existing pre-migration off-VM copy remains. A further full export was rejected
+  by automatic approval review and was not carried out.
+- The release pointer error was observed, reproduced and corrected as recorded
+  above and in PR 16/17. Documentation is rewritten around actual deployment facts,
+  their dates and limits, preserving the earlier results as historical evidence.
+- User approvals authorize the concrete release, not a claim of independent review.
+  Formal human code/content review, other members' own computer tests, the recording
+  and examiner access remain human work. Technical documentation distinguishes
+  real implementation from simulation.
+
+
+## 2026-11-17 — focus technical guidance
+
+- Codex updated source guidance to focus on runtime functionality, contracts,
+  operations, tests and contribution procedures. Earlier non-product delivery text
+  was removed, and binary Office/reference formats were excluded from source.
+- No application, dependency, account, database or infrastructure behaviour changed.
+- Repository reference and whitespace checks passed. Existing technical evidence,
+  AI-use accountability and the normal independent review rule are preserved.
+
+## 2026-11-17 — whole-project technical quality review
+
+- Student responsible: to be confirmed by the contributing group member.
+- Tool/model: Codex; exact runtime model/version is not recorded in the repository.
+- Prompt/purpose: critically compare the supplied course workspace, working product
+  and operational evidence, then fix concrete gaps within the existing Predictive
+  Maintenance scope while preserving data and personal account access.
+- Generated changes: bind restore-verification evidence to the actual adjacent
+  private dump and checksum; isolate local setup by its explicit Compose project;
+  preserve an older selected window beyond the latest-100 overview; escape dialog
+  headings/descriptions; declare successful API response models and the CSRF header;
+  recognize proxy client identity only through an explicitly trusted socket peer
+  and a strict IP header overwritten by Caddy. No domain threshold or case gate
+  changes, extra application role, real prediction or Better Maintenance service.
+- Supporting work: focused browser, local-setup, release, API-contract and proxy
+  regressions; current/historical guidance corrections; source-availability notes;
+  a concrete account/evidence/private-backup handling policy; accurate Node.js
+  prerequisites for the JavaScript helper checks. No source credentials or private
+  runtime settings are added to Git.
+- Validation: `python3 -m unittest discover -s scripts -p 'test_*.py'` passed
+  42 helper tests. `docker compose --profile test run --rm --build tests` passed
+  99 application tests against the isolated `aeris-quality-20261117` test database.
+  Repository reference checks and `git diff --check` also passed.
+  The actual pinned Caddy proxy passed 16 forged/duplicate-header requests from
+  two isolated client containers. Live local HTTP smoke, Newman 27 requests/46
+  assertions and a private backup/isolated restore passed. The complete selected
+  case response stayed identical after app/database restart. Medium/high Bandit
+  gating and the locked runtime dependency audit passed without advisory ignores.
+  These checks do not establish a shared deployment or complete browser acceptance.
+  Earlier test counts belong to their dated baseline, not this candidate.
+- Human assessment: pending independent group review and other members' own-computer
+  acceptance. Agent analysis and tests do not supply that review. This candidate
+  has not been described as installed on Azure; the last externally verified
+  shared revision remains recorded in the deployment guide.

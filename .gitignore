@@ -28,3 +28,8 @@ CLAUDE.local.md
 *.sqlite3
 *.dump
 *.backup
+
+# Binary office and reference documents stay outside the source repository
+*.docx
+*.pdf
+*.pptx

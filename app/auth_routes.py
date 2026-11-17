@@ -7,6 +7,7 @@ from fastapi.security import APIKeyCookie
 
 from .accounts import ChangePassword, Login, NewUser, ResetPassword, UpdateUser
 from .domain import DomainError
+from .client_identity import socket_peer
 
 
 def build_auth(settings):
@@ -42,7 +43,7 @@ def build_auth(settings):
     def login(command: Login, request: Request, response: Response):
         old = request.cookies.get(cookie_name)
         # Successful login always issues a fresh opaque session identifier.
-        token, result = request.app.state.accounts.login(command, request.client.host if request.client else "unknown")
+        token, result = request.app.state.accounts.login(command, getattr(request.state, "client_identity", socket_peer(request)))
         if old:
             from .accounts import digest
             request.app.state.accounts.logout({"session_hash": digest(old)})
