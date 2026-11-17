@@ -10,12 +10,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from psycopg import Error as DatabaseError
 from psycopg_pool import PoolTimeout
 from starlette.exceptions import HTTPException
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.concurrency import run_in_threadpool
 
 from .db import initialize, open_pool
 from .domain import DomainError
@@ -25,6 +27,10 @@ from .telemetry import HttpTelemetry, Telemetry
 from .accounts import Accounts
 from .auth_routes import build_auth
 from .security_log import record_rejection
+from .client_identity import resolve_client_identity
+from .responses import (HealthResponse, OverviewResponse, ScenarioDetailResponse,
+    ScenarioCreatedReceipt, ReadingReceipt, AssessmentReceipt, ForecastReceipt,
+    ReviewReceipt, CaseReceipt, OutcomeReceipt, ErrorResponse)
 
 logger = logging.getLogger(__name__)
 STATIC = Path(__file__).with_name("static")
@@ -39,6 +45,7 @@ class Settings:
     seed_demo: bool = True
     otlp_endpoint: str = ""
     cookie_namespace: str = "session"
+    trusted_proxy_host: str = ""
 
     def __post_init__(self):
         if not self.database_url:
@@ -51,6 +58,9 @@ class Settings:
             raise ValueError("Use a short ASCII cookie namespace.")
         if "*" in self.allowed_hosts:
             raise ValueError("Use explicit ALLOWED_HOSTS, not a wildcard.")
+        if self.trusted_proxy_host and (self.mode != "shared" or not re.fullmatch(
+                r"[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?", self.trusted_proxy_host)):
+            raise ValueError("TRUSTED_PROXY_HOST requires shared mode and one explicit service hostname.")
 
     @classmethod
     def from_env(cls):
@@ -59,7 +69,8 @@ class Settings:
                    allowed_hosts=tuple(h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",") if h.strip()),
                    seed_demo=os.environ.get("SEED_DEMO", "true").lower() == "true",
                    otlp_endpoint=os.environ.get("AERIS_OTLP_ENDPOINT", ""),
-                   cookie_namespace=os.environ.get("AERIS_COOKIE_NAMESPACE", "session"))
+                   cookie_namespace=os.environ.get("AERIS_COOKIE_NAMESPACE", "session"),
+                   trusted_proxy_host=os.environ.get("TRUSTED_PROXY_HOST", ""))
 
 
 def error_response(code, message, status, headers=None):
@@ -110,7 +121,8 @@ def create_app(settings: Settings | None = None):
                 return error_response("LENGTH_REQUIRED", "A Content-Length is required for bounded JSON writes.", 411)
             if not length.isdigit() or int(length) > 16384:
                 return error_response("BODY_TOO_LARGE", "The JSON body must be at most 16 KiB.", 413)
-            ip = request.client.host if request.client else "unknown"
+            ip = await run_in_threadpool(resolve_client_identity, request, settings.trusted_proxy_host)
+            request.state.client_identity = ip
             now = monotonic()
             start, count = write_windows.get(ip, (now, 0))
             if now - start >= 60:
@@ -166,59 +178,79 @@ def create_app(settings: Settings | None = None):
     def dashboard():
         return FileResponse(STATIC / "index.html")
 
-    @app.get("/health", tags=["Operations"])
+    @app.get("/health", tags=["Operations"], response_model=HealthResponse,
+             responses={503: {"model": ErrorResponse, "description": "Database temporarily unavailable"}})
     def health(service: Maintenance = Depends(maintenance)):
         with service.pool.connection() as conn:
             conn.execute("SELECT 1")
         return {"status": "ok", "database": "connected", "mode": settings.mode,
                 "simulation": True, "revision": os.environ.get("APP_REVISION", "local")}
 
-    api = APIRouter(prefix="/api", dependencies=[Depends(authorized)], tags=["Predictive Maintenance"])
+    errors = {status: {"model": ErrorResponse} for status in (401, 403, 404, 409, 411, 413, 415, 422, 429, 503)}
+    api = APIRouter(prefix="/api", dependencies=[Depends(authorized)], tags=["Predictive Maintenance"], responses=errors)
 
-    @api.get("/overview")
+    @api.get("/overview", response_model=OverviewResponse)
     def overview(service: Maintenance = Depends(maintenance)):
         return service.overview()
 
-    @api.get("/scenarios/{scenario_id}")
+    @api.get("/scenarios/{scenario_id}", response_model=ScenarioDetailResponse)
     def detail(scenario_id: UUID, service: Maintenance = Depends(maintenance)):
         return service.detail(scenario_id)
 
-    @api.get("/cases/{case_id}")
+    @api.get("/cases/{case_id}", response_model=ScenarioDetailResponse)
     def case_detail(case_id: str, service: Maintenance = Depends(maintenance)):
         return service.case_detail(case_id)
 
-    @api.post("/scenarios", status_code=201)
+    @api.post("/scenarios", status_code=201, response_model=ScenarioCreatedReceipt)
     def new_scenario(command: NewScenario, service: Maintenance = Depends(maintenance)):
         return service.create_scenario(command)
 
-    @api.post("/scenarios/{scenario_id}/readings", status_code=201)
+    @api.post("/scenarios/{scenario_id}/readings", status_code=201, response_model=ReadingReceipt)
     def reading(scenario_id: UUID, command: Reading, service: Maintenance = Depends(maintenance)):
         return service.record_reading(scenario_id, command)
 
-    @api.post("/scenarios/{scenario_id}/assess")
+    @api.post("/scenarios/{scenario_id}/assess", response_model=AssessmentReceipt)
     def assess(scenario_id: UUID, command: Command, service: Maintenance = Depends(maintenance)):
         return service.assess(scenario_id, command)
 
-    @api.post("/scenarios/{scenario_id}/forecast")
+    @api.post("/scenarios/{scenario_id}/forecast", response_model=ForecastReceipt)
     def forecast(scenario_id: UUID, command: Command, service: Maintenance = Depends(maintenance)):
         return service.forecast(scenario_id, command)
 
-    @api.put("/scenarios/{scenario_id}/review")
+    @api.put("/scenarios/{scenario_id}/review", response_model=ReviewReceipt)
     def review(scenario_id: UUID, command: Review, service: Maintenance = Depends(maintenance), session=Depends(authorized)):
         command = command.model_copy(update={"reviewer": session["user"]["display_name"]})
         return service.review(scenario_id, command, actor_id=str(session["user"]["id"]))
 
-    @api.post("/scenarios/{scenario_id}/case", status_code=201)
+    @api.post("/scenarios/{scenario_id}/case", status_code=201, response_model=CaseReceipt)
     def create_case(scenario_id: UUID, command: Command, service: Maintenance = Depends(maintenance)):
         return service.create_case(scenario_id, command)
 
-    @api.post("/cases/{case_id}/outcomes")
+    @api.post("/cases/{case_id}/outcomes", response_model=OutcomeReceipt)
     def outcome(case_id: str, command: Outcome, service: Maintenance = Depends(maintenance)):
         return service.record_outcome(case_id, command)
 
     app.include_router(api)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     app.add_middleware(HttpTelemetry, state=app.state)
+
+    def api_schema():
+        if app.openapi_schema is None:
+            schema = get_openapi(title=app.title, version=app.version,
+                                 description=app.description, routes=app.routes)
+            for path, operations in schema["paths"].items():
+                if not path.startswith("/api/") or path == "/api/auth/login":
+                    continue
+                for method, operation in operations.items():
+                    if method in {"post", "put", "patch", "delete"}:
+                        operation.setdefault("parameters", []).append({
+                            "name": "X-CSRF-Token", "in": "header", "required": True,
+                            "description": "Session-bound token from login or /api/auth/me; the session cookie is also required.",
+                            "schema": {"type": "string"}})
+            app.openapi_schema = schema
+        return app.openapi_schema
+
+    app.openapi = api_schema
     return app
 
 

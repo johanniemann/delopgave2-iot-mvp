@@ -244,3 +244,33 @@ and current complete PR checks must be verified separately before merge.
 - No application, dependency, account, database or infrastructure behaviour changed.
 - Repository reference and whitespace checks passed. Existing technical evidence,
   AI-use accountability and the normal independent review rule are preserved.
+
+## 2026-11-17 — whole-project technical quality review
+
+- Student responsible: to be confirmed by the contributing group member.
+- Tool/model: Codex; exact runtime model/version is not recorded in the repository.
+- Prompt/purpose: critically compare the supplied course workspace, working product
+  and operational evidence, then fix concrete gaps within the existing Predictive
+  Maintenance scope while preserving data and personal account access.
+- Generated changes: bind restore-verification evidence to the actual adjacent
+  private dump and checksum; isolate local setup by its explicit Compose project;
+  preserve an older selected window beyond the latest-100 overview; escape dialog
+  headings/descriptions; declare successful API response models and the CSRF header;
+  recognize proxy client identity only through an explicitly trusted socket peer
+  and a strict IP header overwritten by Caddy. No domain threshold or case gate
+  changes, extra application role, real prediction or Better Maintenance service.
+- Supporting work: focused browser, local-setup, release, API-contract and proxy
+  regressions; current/historical guidance corrections; source-availability notes;
+  a concrete account/evidence/private-backup handling policy; accurate Node.js
+  prerequisites for the JavaScript helper checks. No source credentials or private
+  runtime settings are added to Git.
+- Validation: `python3 -m unittest discover -s scripts -p 'test_*.py'` passed
+  42 helper tests. `docker compose --profile test run --rm --build tests` passed
+  99 application tests against the isolated `aeris-quality-20261117` test database.
+  Repository reference checks and `git diff --check` also passed.
+  These checks do not establish a shared deployment or complete browser acceptance.
+  Earlier test counts belong to their dated baseline, not this candidate.
+- Human assessment: pending independent group review and other members' own-computer
+  acceptance. Agent analysis and tests do not supply that review. This candidate
+  has not been described as installed on Azure; the last externally verified
+  shared revision remains recorded in the deployment guide.

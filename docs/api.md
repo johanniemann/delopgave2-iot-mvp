@@ -30,6 +30,13 @@ all forecast risks were rejected. Forecast numbers are fixed illustrative fixtur
 | `POST /api/scenarios/{id}/case` | Create exactly one case once both gates hold |
 | `POST /api/cases/{id}/outcomes` | Record a labelled simulated external result; resolve only if all work complete and verification Passed |
 
+The overview is a recent summary: at most 100 scenarios, 100 cases and 30 events.
+Its metrics count all persisted records. Dashboard case filters and search apply
+to those recent cases. Detail endpoints remain available for older known IDs;
+refreshing or recording an outcome preserves the selected older window. The
+window picker labels its latest 100 entries and includes an older current selection
+separately. The overview does not provide pagination or a complete archive search.
+
 Every mutation needs a UUID `request_id`. Existing-scenario mutations also need
 `expected_version` from the latest detail. A repeated identical request returns its
 stored receipt. Reusing an ID with different content or a stale version returns 409.

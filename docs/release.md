@@ -7,6 +7,12 @@ Bandit/dependency gate and repository/helper checks, then run real PostgreSQL te
 build the runtime image, start it, exercise HTTP/Newman and verify a real database
 backup/restore. No cloud credentials are supplied to PR jobs.
 
+The last externally verified shared release is
+`0f1e9d82a2ee36f687292b3781dd7778b6283364`. The later quality-improvement candidate
+adds stricter archive verification and proxy client identity; a source change alone
+does not install it. Keep [deployment status](deployment.md) tied to the revision
+actually observed on the VM.
+
 Successful push/manual runs package that exact running image plus `git archive`
 of the same source commit. `release.json` records the commit, platform, image ID
 and archive checksums. The private Actions artifact lasts one day. Pushes to dev
@@ -51,6 +57,15 @@ window and retry when necessary. It restores the dump into a newly generated
 then drops only that generated test database. Transient sessions/login throttles
 are restored but excluded from the content comparison because ordinary HTTP reads
 may refresh sessions. A `.verified.json` file is written only after success.
+The current helper includes the verified archive's basename and SHA-256 in that
+file. Keep the dump and verification file in the same private directory. Promotion
+requires that exact adjacent dump to remain a private regular file, rejects
+symlinks, and rechecks its checksum as well as the restore's age. An old verification
+file without the archive basename cannot authorize promotion: create and verify a
+fresh backup using the current tools; do not manually add fields to old evidence.
+
+The [data-handling policy](data-handling.md) covers the account and session material
+inside private dumps and the manual review of retained copies at project closure.
 
 Both a v1 source and a later account schema are supported: table names come from
 the selected schema and are restricted before composing queries. No restore is
@@ -60,7 +75,8 @@ ever directed at the live `aeris` database by this verification command.
 
 Use Python 3.12+ on the existing Ubuntu host. Select an approved full commit and
 its successful CI run. Confirm the package revision and platform, a verified
-backup from the last 24 hours, stable settings and Compose project `aeris-shared`.
+backup from the last 24 hours with its intact adjacent private dump, stable settings
+and Compose project `aeris-shared`.
 
 From a trusted copy of the release tools on that host:
 
@@ -110,14 +126,16 @@ coverage. Nightly intentional VM shutdown must not be described as continuous up
 
 ## Verification state
 
-Local 2026-11-17: real backup/restore comparison passed, as did the expanded
+Earlier baseline on 2026-11-17: real backup/restore comparison passed, as did the expanded
 Postman workflow and 73 application tests. Helper safety checks reject altered
 archives, path traversal, wrong-project evidence and unsafe restore targets.
 Trusted GHCR publication, checksummed CI artifacts, actual shared promotion, external
 HTTPS/Postman/account controls and persistence after an app/database restart were
 verified on 2026-11-17. See [recorded evidence](verification-2026-11-17.md). A final
 relative-path defect was reproduced and fixed with a full-entry-point regression;
-all 24 helper tests now pass. Always verify both the runtime image and shared current
+all 24 helper tests passed for that baseline. Those historical counts do not prove
+the later quality-improvement candidate. Record fresh helper/proxy/application
+results before promoting it. Always verify both the runtime image and shared current
 pointer, as well as data, after promotion.
 
 Official references checked 2026-11-17:

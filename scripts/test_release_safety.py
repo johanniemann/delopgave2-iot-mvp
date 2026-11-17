@@ -39,8 +39,12 @@ class ReleaseSafetyTests(unittest.TestCase):
             (bundle / "release.json").write_text(json.dumps(data))
             evidence = {"tables": {"scenarios": "preserved"}}
             verification = root / "backup.verified.json"
+            archive = root / "backup.dump"
+            archive.write_bytes(b"restored-backup")
+            archive.chmod(0o600)
             database_backup.private_json(verification, {"verified_at": datetime.now(timezone.utc).isoformat(),
-                "compose_project": "aeris-shared", "database": "aeris",
+                "compose_project": "aeris-shared", "database": "aeris", "archive": archive.name,
+                "archive_sha256": database_backup.digest_file(archive),
                 "restored_into_isolated_database": True, "evidence": evidence})
             env_file = root / ".env.shared"
             env_file.touch(mode=0o600)
@@ -138,6 +142,67 @@ class ReleaseSafetyTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "checksum"):
                     database_backup.verify_restore([], manifest)
                 command.assert_not_called()
+
+    def test_promotion_rechecks_the_verified_archive_before_deployment(self):
+        for condition in ("missing", "changed", "public", "symlink", "traversal"):
+            with self.subTest(condition=condition), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                archive = root / "aeris.dump"
+                archive.write_bytes(b"restored-backup")
+                archive.chmod(0o600)
+                verification = root / "aeris.verified.json"
+                data = {"verified_at": datetime.now(timezone.utc).isoformat(),
+                    "compose_project": "aeris-shared", "database": "aeris",
+                    "archive": archive.name, "archive_sha256": database_backup.digest_file(archive),
+                    "restored_into_isolated_database": True, "evidence": {}}
+                if condition == "missing":
+                    archive.unlink()
+                elif condition == "changed":
+                    archive.write_bytes(b"corrupted")
+                elif condition == "public":
+                    archive.chmod(0o644)
+                elif condition == "symlink":
+                    actual = root / "actual.dump"
+                    archive.rename(actual)
+                    archive.symlink_to(actual)
+                else:
+                    data["archive"] = "../aeris.dump"
+                database_backup.private_json(verification, data)
+                with patch.object(promote_release.subprocess, "run") as docker:
+                    with self.assertRaises(ValueError):
+                        promote_release.require_backup(verification)
+                    docker.assert_not_called()
+
+    def test_usable_private_verified_backup_is_required(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            archive = root / "aeris.dump"
+            archive.write_bytes(b"restored-backup")
+            archive.chmod(0o600)
+            verification = root / "aeris.verified.json"
+            data = {"verified_at": datetime.now(timezone.utc).isoformat(),
+                "compose_project": "aeris-shared", "database": "aeris",
+                "archive": archive.name, "archive_sha256": database_backup.digest_file(archive),
+                "restored_into_isolated_database": True, "evidence": {}}
+            database_backup.private_json(verification, data)
+            self.assertEqual(promote_release.require_backup(verification), data)
+
+    def test_verified_result_identifies_the_actual_restored_archive(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            archive = root / "aeris.dump"
+            archive.write_bytes(b"restored-backup")
+            archive.chmod(0o600)
+            manifest = root / "aeris.json"
+            database_backup.private_json(manifest, {"archive": archive.name, "database": "aeris",
+                "compose_project": "aeris-shared", "archive_sha256": database_backup.digest_file(archive),
+                "evidence": {"tables": {"scenarios": "fingerprint"}}})
+            with patch.object(database_backup, "database_command"), \
+                 patch.object(database_backup, "fingerprint", return_value={"tables": {"scenarios": "fingerprint"}}):
+                result = database_backup.verify_restore([], manifest)
+            data = json.loads(result.read_text())
+            self.assertEqual(data["archive"], archive.name)
+            self.assertEqual(data["archive_sha256"], database_backup.digest_file(archive))
 
     def test_unverified_or_wrong_project_backup_cannot_authorize_promotion(self):
         with tempfile.TemporaryDirectory() as folder:
