@@ -80,3 +80,5 @@ fresh local Docker deployment/HTTP smoke check. No feature branch deploys to Azu
 - [Branch, PR and review workflow](CONTRIBUTING.md)
 - [Using Codex, Claude Code, Cursor or Copilot](docs/agent-setup.md)
 - [Canonical agent instructions](AGENTS.md) · [AI-use record](docs/ai-use.md)
+
+Jeg elsker mad ing
